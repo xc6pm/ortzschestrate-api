@@ -1,6 +1,6 @@
-import { movesForPieceOnSqr } from "~/business/moveFinder"
 import type { PieceType } from "./Piece"
 import { Sqr, SqrLocEnum, type SqrLoc } from "./Square"
+import { findMoves } from "./moveFinder"
 
 export type Board = Sqr[]
 
@@ -21,7 +21,7 @@ export class Game {
   }
 
   public findMoves(sqr: Sqr): Sqr[] {
-    return movesForPieceOnSqr(this._board, sqr)
+    return findMoves(this._board, sqr)
   }
 
   /// Does not perform validation. Given moves must be validated before using findMoves.

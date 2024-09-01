@@ -1,7 +1,7 @@
 import { findSqrAt, type Board, type Game } from "./Board"
 import type { Sqr, SqrLoc } from "./Square"
 
-export const findMoves = (board: Board, sqr: Sqr) => {
+export const findMoves = (board: Board, sqr: Sqr): Sqr[] => {
   const getSqrIfCanMoveTo = (x: number, y: number): Sqr | null => {
     const col = sqr.loc.charCodeAt(0)
     const row = parseInt(sqr.loc[1])
@@ -39,7 +39,7 @@ export const findMoves = (board: Board, sqr: Sqr) => {
     return res
   }
 
-  const findKnightMoves = (board: Board, sqr: Sqr) => {
+  const findKnightMoves = () => {
     const moveDirections = [
       [1, 2],
       [2, 1],
@@ -53,10 +53,10 @@ export const findMoves = (board: Board, sqr: Sqr) => {
 
     return moveDirections
       .map((d) => getSqrIfCanMoveTo(d[0], d[1]))
-      .filter((s) => s)
+      .filter((s) => s) as Sqr[]
   }
 
-  const findRookMoves = (board: Board, sqr: Sqr) => {
+  const findRookMoves = () => {
     const directions = [
       [0, 1],
       [1, 0],
@@ -70,7 +70,7 @@ export const findMoves = (board: Board, sqr: Sqr) => {
       .flat()
   }
 
-  const findBishopMoves = (board: Board, sqr: Sqr): Sqr[] => {
+  const findBishopMoves = (): Sqr[] => {
     const directions = [
       [-1, -1],
       [-1, 1],
@@ -176,7 +176,9 @@ export const findMoves = (board: Board, sqr: Sqr) => {
       [-1, 1],
     ]
 
-    return directions.map((d) => getSqrIfCanMoveTo(d[0], d[1])).filter((s) => s)
+    return directions
+      .map((d) => getSqrIfCanMoveTo(d[0], d[1]))
+      .filter((s) => s) as Sqr[]
   }
 
   const findQueenMoves = () => {
@@ -203,11 +205,11 @@ export const findMoves = (board: Board, sqr: Sqr) => {
     case "pawn":
       return findPawnMoves()
     case "rook":
-      return findRookMoves(board, sqr)
+      return findRookMoves()
     case "knight":
-      return findKnightMoves(board, sqr)
+      return findKnightMoves()
     case "bishop":
-      return findBishopMoves(board, sqr)
+      return findBishopMoves()
     case "queen":
       return findQueenMoves()
     case "king":
