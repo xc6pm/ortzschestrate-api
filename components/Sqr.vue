@@ -7,7 +7,9 @@ const props = defineProps({
 </script>
 
 <template>
-  <button v-if="props.sqr" :class="props.sqr.color"></button>
+  <button v-if="props.sqr" :class="props.sqr.color">
+    <slot></slot>
+  </button>
 </template>
 
 <style scoped>
