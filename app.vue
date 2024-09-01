@@ -1,6 +1,9 @@
+<script setup>
+import ChessBoard from './components/ChessBoard.vue';
+</script>
+
 <template>
   <div>
-    <NuxtRouteAnnouncer />
-    <NuxtWelcome />
+    <ChessBoard/>
   </div>
 </template>

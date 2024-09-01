@@ -1,4 +1,4 @@
-import type { Piece } from "./Piece"
+import type { Color, Piece } from "./Piece"
 
 export type SqrLoc =
   | "a1"
@@ -135,9 +135,12 @@ export enum SqrLocEnum {
 
 export class Sqr {
   readonly loc: SqrLoc
+  readonly color: Color
   piece?: Piece
 
   constructor(loc: SqrLoc) {
     this.loc = loc
+    const rowChange = Math.floor(SqrLocEnum[loc] / 8) % 2 === 0 ? 0 : 1
+    this.color = (SqrLocEnum[loc] + rowChange) % 2 === 0 ? "black" : "white"
   }
 }
