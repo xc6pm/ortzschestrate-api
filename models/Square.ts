@@ -143,4 +143,10 @@ export class Sqr {
     const rowChange = Math.floor(SqrLocEnum[loc] / 8) % 2 === 0 ? 0 : 1
     this.color = (SqrLocEnum[loc] + rowChange) % 2 === 0 ? "black" : "white"
   }
+
+  public static makeCopy(other: Sqr) {
+    const copy = new Sqr(other.loc)
+    copy.piece = other.piece
+    return copy
+  }
 }

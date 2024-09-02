@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Sqr as SqrType } from "~/models/Square"
 
-const { sqr } = defineProps({
+const { sqr, moveTarget } = defineProps({
   sqr: { type: SqrType, required: true },
   moveTarget: { type: Boolean, required: true },
 })
@@ -24,8 +24,11 @@ button {
   width: 100px;
   height: 100px;
   border-style: none;
-  margin-bottom: -4px;
-  margin-top: -4px;
+  border-width: 0;
+  margin-bottom: -5px;
+  margin-top: -5px;
+  padding: 0;
+  position: relative;
 }
 
 .white {
@@ -37,16 +40,23 @@ button {
 }
 
 img {
-  width: 80px;
-  height: 80px;
+  width: 80%;
+  height: 80%;
+  position: absolute;
+  margin: auto;
+  left: 10%;
+  right: 50%;
+  top: 50%;
+  bottom: 50%;
+  text-align: center;
 }
 
 .moveTg {
   border-radius: 50%;
   background-color: black;
   opacity: 0.5;
-  width: 35px;
-  height: 35px;
+  width: 35%;
+  height: 35%;
   margin-left: auto;
   margin-right: auto;
 }

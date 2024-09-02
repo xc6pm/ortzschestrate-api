@@ -2,7 +2,7 @@ import { defineStore } from "pinia"
 import { Game } from "~/models/Game"
 
 export const useGamesStore = defineStore("games", () => {
-  const games: globalThis.Ref<Game[]> = ref([])
+  const games = ref<Game[]>([])
 
   const newGame = () => {
     const newItem = new Game()

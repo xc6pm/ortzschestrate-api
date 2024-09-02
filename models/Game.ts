@@ -1,9 +1,10 @@
 import { generateId } from "~/utils/randomGenerator"
 import { initBoard, type Board } from "./Board"
 import { findMoves } from "./moveFinder"
-import type { Sqr } from "./Square"
+import { Sqr } from "./Square"
 
 export class Game {
+  private _boardStack: Board[] = []
   private _board: Board
   private _boardUpdatedHandlers: ((game: Game) => void)[] = []
   readonly gameId: number
@@ -27,8 +28,22 @@ export class Game {
 
   /// Does not perform validation. Given moves must be validated before using findMoves.
   public movePiece(currentSqr: Sqr, targetSqr: Sqr) {
-    targetSqr.piece = currentSqr.piece
-    currentSqr.piece = undefined
+    const pieceToBeMoved = currentSqr.piece
+    this._boardStack.push(this._board.map(s => {
+      if (s.loc === targetSqr.loc) {
+        const copy = Sqr.makeCopy(s)
+        copy.piece = pieceToBeMoved
+        return copy
+      }
+      if (s.loc === currentSqr.loc) {
+        const copy = Sqr.makeCopy(s)
+        copy.piece = undefined
+        return copy
+      }
+      return Sqr.makeCopy(s)
+    }))
+    this._board = this._boardStack[this._boardStack.length - 1]
+    
     this.notifyBoardUpdated()
   }
 

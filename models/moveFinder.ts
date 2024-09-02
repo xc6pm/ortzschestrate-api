@@ -1,4 +1,4 @@
-import { findSqrAt, type Board, type Game } from "./Board"
+import { findSqrAt, type Board } from "./Board"
 import type { Sqr, SqrLoc } from "./Square"
 
 export const findMoves = (board: Board, sqr: Sqr): Sqr[] => {
