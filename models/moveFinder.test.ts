@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, test } from "vitest"
-import { findSqrAt, initBoard, type Board } from "./Board"
+import Board from "./Board"
 import { findMoves } from "./moveFinder"
 
 let board: Board
 beforeEach(() => {
-  board = initBoard()
+  board = Board.setupNew()
 })
 
 describe("pawn", () => {
@@ -27,7 +27,7 @@ describe("rook", () => {
     let rookMoves = findMoves(board, rookSqr)
     expect(rookMoves).toHaveLength(0)
 
-    const blockingPawnSqr = findSqrAt(board, "a2")
+    const blockingPawnSqr = board.findSqrAt("a2")
     const blockingPawnMoves = findMoves(board, blockingPawnSqr)
     blockingPawnMoves[1]!.piece = blockingPawnSqr.piece
     blockingPawnSqr.piece = undefined
@@ -37,7 +37,7 @@ describe("rook", () => {
   })
 
   test("rook at the middle", () => {
-    const e5 = findSqrAt(board, "e5")
+    const e5 = board.findSqrAt("e5")
 
     e5.piece = board[0].piece
     board[0].piece = undefined
@@ -54,7 +54,7 @@ describe("bishop", () => {
     let bishopMoves = findMoves(board, bishopSqr)
     expect(bishopMoves).toHaveLength(0)
 
-    const blockingPawnSqr = findSqrAt(board, "d2")
+    const blockingPawnSqr = board.findSqrAt("d2")
     const blockingPawnMoves = findMoves(board, blockingPawnSqr)
     blockingPawnMoves[0]!.piece = blockingPawnSqr.piece
     blockingPawnSqr.piece = undefined
@@ -64,7 +64,7 @@ describe("bishop", () => {
   })
 
   test("bishop at the middle", () => {
-    const e5 = findSqrAt(board, "e5")
+    const e5 = board.findSqrAt("e5")
 
     e5.piece = board[2].piece
     board[2].piece = undefined
@@ -81,7 +81,7 @@ describe("knight", () => {
     let knightMoves = findMoves(board, knightSqr)
     expect(knightMoves).toHaveLength(2)
 
-    const blockingPawnSqr = findSqrAt(board, "d2")
+    const blockingPawnSqr = board.findSqrAt("d2")
     const blockingPawnMoves = findMoves(board, blockingPawnSqr)
     blockingPawnMoves[1]!.piece = blockingPawnSqr.piece
     blockingPawnSqr.piece = undefined
@@ -91,12 +91,12 @@ describe("knight", () => {
   })
 
   test("knight at the middle", () => {
-    const e2 = findSqrAt(board, "e2")
+    const e2 = board.findSqrAt("e2")
     findMoves(board, e2)[0]!.piece = e2.piece
     e2.piece = undefined
 
     const b1 = board[1]
-    const d5 = findSqrAt(board, "d5")
+    const d5 = board.findSqrAt("d5")
     d5.piece = b1.piece
     b1.piece = undefined
 
@@ -113,7 +113,7 @@ describe("queen", () => {
     let queenMoves = findMoves(board, queenSqr)
     expect(queenMoves).toHaveLength(0)
 
-    const blockingPawnSqr = findSqrAt(board, "e2")
+    const blockingPawnSqr = board.findSqrAt("e2")
     const blockingPawnMoves = findMoves(board, blockingPawnSqr)
     blockingPawnMoves[1]!.piece = blockingPawnSqr.piece
     blockingPawnSqr.piece = undefined
@@ -123,12 +123,12 @@ describe("queen", () => {
   })
 
   test("queen at the middle", () => {
-    const e2 = findSqrAt(board, "e2")
+    const e2 = board.findSqrAt("e2")
     findMoves(board, e2)[0]!.piece = e2.piece
     e2.piece = undefined
 
     const d1 = board[3]
-    const e4 = findSqrAt(board, "e4")
+    const e4 = board.findSqrAt("e4")
     e4.piece = d1.piece
     d1.piece = undefined
 
@@ -144,7 +144,7 @@ describe("king", () => {
     let kingMoves = findMoves(board, kingSqr)
     expect(kingMoves).toHaveLength(0)
 
-    const blockingPawnSqr = findSqrAt(board, "e2")
+    const blockingPawnSqr = board.findSqrAt("e2")
     const blockingPawnMoves = findMoves(board, blockingPawnSqr)
     blockingPawnMoves[1]!.piece = blockingPawnSqr.piece
     blockingPawnSqr.piece = undefined
@@ -154,12 +154,12 @@ describe("king", () => {
   })
 
   test("king at the middle", () => {
-    const e2 = findSqrAt(board, "e2")
+    const e2 = board.findSqrAt("e2")
     findMoves(board, e2)[0]!.piece = e2.piece
     e2.piece = undefined
 
     const e1 = board[4]
-    const e4 = findSqrAt(board, "e4")
+    const e4 = board.findSqrAt("e4")
     e4.piece = e1.piece
     e1.piece = undefined
 

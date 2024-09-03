@@ -1,9 +1,9 @@
 import { expect, test } from "vitest"
-import { initBoard } from "./Board"
+import Board from "./Board"
 import type { PieceType } from "./Piece"
 
 test("pieces are placed correctly", () => {
-  const board = initBoard()
+  const board = Board.setupNew()
 
   const backRank: PieceType[] = [
     "rook",

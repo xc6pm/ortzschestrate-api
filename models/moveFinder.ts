@@ -1,4 +1,4 @@
-import { findSqrAt, type Board } from "./Board"
+import Board from "./Board"
 import type { Sqr, SqrLoc } from "./Square"
 
 export const findMoves = (board: Board, sqr: Sqr): Sqr[] => {
@@ -11,7 +11,7 @@ export const findMoves = (board: Board, sqr: Sqr): Sqr[] => {
     if (row + y < 1 || row + y > 8) return null
 
     const targetSqrLoc = String.fromCharCode(col + x) + (row + y).toString()
-    const targetSqr = findSqrAt(board, targetSqrLoc as SqrLoc)
+    const targetSqr = board.findSqrAt(targetSqrLoc as SqrLoc)
 
     if (targetSqr.piece && targetSqr.piece.color === sqr.piece?.color)
       return null
@@ -86,8 +86,7 @@ export const findMoves = (board: Board, sqr: Sqr): Sqr[] => {
   const findPawnMoves = () => {
     const pawnForwardMoves = (): Sqr[] => {
       const findSqrForward = (board: Board, sqr: Sqr, sqrsForward: 1 | 2) => {
-        const sqrForward = findSqrAt(
-          board,
+        const sqrForward = board.findSqrAt(
           sqr.loc.replace(
             sqr.loc[1],
             sqr.piece?.color === "white"
@@ -131,8 +130,11 @@ export const findMoves = (board: Board, sqr: Sqr): Sqr[] => {
           (
             parseInt(sqr.loc[1]) + (sqr.piece?.color === "white" ? +1 : -1)
           ).toString()
-        const sqrOnTopLeft = findSqrAt(board, sqrLocAtTopLeft as SqrLoc)
-        if (sqrOnTopLeft.piece && sqrOnTopLeft.piece.color !== sqr.piece?.color) {
+        const sqrOnTopLeft = board.findSqrAt(sqrLocAtTopLeft as SqrLoc)
+        if (
+          sqrOnTopLeft.piece &&
+          sqrOnTopLeft.piece.color !== sqr.piece?.color
+        ) {
           return [sqrOnTopLeft]
         }
 
@@ -149,8 +151,11 @@ export const findMoves = (board: Board, sqr: Sqr): Sqr[] => {
           (
             parseInt(sqr.loc[1]) + (sqr.piece?.color === "white" ? +1 : -1)
           ).toString()
-        const sqrOnTopRight = findSqrAt(board, sqrLocAtTopRight as SqrLoc)
-        if (sqrOnTopRight.piece && sqrOnTopRight.piece.color !== sqr.piece?.color) {
+        const sqrOnTopRight = board.findSqrAt(sqrLocAtTopRight as SqrLoc)
+        if (
+          sqrOnTopRight.piece &&
+          sqrOnTopRight.piece.color !== sqr.piece?.color
+        ) {
           return [sqrOnTopRight]
         }
 

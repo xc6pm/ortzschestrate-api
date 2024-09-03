@@ -1,16 +1,17 @@
 import { generateId } from "~/utils/randomGenerator"
-import { initBoard, type Board } from "./Board"
-import { findMoves } from "./moveFinder"
+import Board from "./Board"
 import { Sqr } from "./Square"
+import { InitialBoard, Move, type BoardUpdate } from "./BoardUpdate"
 
 export class Game {
-  private _boardStack: Board[] = []
+  private _moveHistory: BoardUpdate[] = []
   private _board: Board
   private _boardUpdatedHandlers: ((game: Game) => void)[] = []
   readonly gameId: number
 
   constructor() {
-    this._board = initBoard()
+    this._moveHistory.push(new InitialBoard())
+    this._board = this._moveHistory[0].newBoard
     this.gameId = generateId()
   }
 
@@ -22,28 +23,24 @@ export class Game {
     this._boardUpdatedHandlers.push(handler)
   }
 
-  public findMoves(sqr: Sqr): Sqr[] {
-    return findMoves(this._board, sqr)
+  public findMoves(sqr: Sqr) {
+    return this._board.findMoves(sqr)
   }
 
   /// Does not perform validation. Given moves must be validated before using findMoves.
   public movePiece(currentSqr: Sqr, targetSqr: Sqr) {
-    const pieceToBeMoved = currentSqr.piece
-    this._boardStack.push(this._board.map(s => {
-      if (s.loc === targetSqr.loc) {
-        const copy = Sqr.makeCopy(s)
-        copy.piece = pieceToBeMoved
-        return copy
-      }
-      if (s.loc === currentSqr.loc) {
-        const copy = Sqr.makeCopy(s)
-        copy.piece = undefined
-        return copy
-      }
-      return Sqr.makeCopy(s)
-    }))
-    this._board = this._boardStack[this._boardStack.length - 1]
-    
+    if (!currentSqr.piece)
+      throw new Error(`There's no piece to be moved on ${currentSqr.loc}.`)
+
+    if (
+      this._moveHistory[this._moveHistory.length - 1].subjectColor ===
+      currentSqr.piece?.color
+    )
+      return
+
+    this._moveHistory.push(new Move(currentSqr, targetSqr, this.board))
+    this._board = this._moveHistory[this._moveHistory.length - 1].newBoard
+
     this.notifyBoardUpdated()
   }
 
