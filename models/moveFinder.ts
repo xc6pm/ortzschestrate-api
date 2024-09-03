@@ -132,7 +132,7 @@ export const findMoves = (board: Board, sqr: Sqr): Sqr[] => {
             parseInt(sqr.loc[1]) + (sqr.piece?.color === "white" ? +1 : -1)
           ).toString()
         const sqrOnTopLeft = findSqrAt(board, sqrLocAtTopLeft as SqrLoc)
-        if (sqrOnTopLeft.piece) {
+        if (sqrOnTopLeft.piece && sqrOnTopLeft.piece.color !== sqr.piece?.color) {
           return [sqrOnTopLeft]
         }
 
@@ -150,7 +150,7 @@ export const findMoves = (board: Board, sqr: Sqr): Sqr[] => {
             parseInt(sqr.loc[1]) + (sqr.piece?.color === "white" ? +1 : -1)
           ).toString()
         const sqrOnTopRight = findSqrAt(board, sqrLocAtTopRight as SqrLoc)
-        if (sqrOnTopRight.piece) {
+        if (sqrOnTopRight.piece && sqrOnTopRight.piece.color !== sqr.piece?.color) {
           return [sqrOnTopRight]
         }
 
