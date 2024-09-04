@@ -1,5 +1,4 @@
 import Board from "./Board"
-import { findMoves } from "./moveFinder"
 import type { Color } from "./Piece"
 import { Sqr } from "./Square"
 
@@ -56,12 +55,13 @@ export class Move implements BoardUpdate {
   }
 
   public toString() {
-    const isCapture = this.targetSqr.piece !== undefined
-    const movedPiece = this.movedPieceNotation(isCapture)
+    const movedPiece = this.movedPieceNotation()
     return movedPiece + (this.targetSqr.piece ? "x" : "") + this.targetSqr.loc
   }
 
-  private movedPieceNotation(isCapture: Boolean) {
+  private movedPieceNotation() {
+    const isCapture = this.targetSqr.piece !== undefined
+
     switch (this.startingSqr.piece!.type) {
       case "pawn":
         if (isCapture) return this.startingSqr.loc[0]
@@ -78,7 +78,7 @@ export class Move implements BoardUpdate {
             s.piece !== this.startingSqr.piece
         )
         const canSameTypePieceTargetTheSqr = sameTypePieces.some((s) =>
-          findMoves(this.prevBoard, s).includes(this.targetSqr)
+          this.prevBoard.findMoves(s).some((m) => m.loc === this.targetSqr.loc)
         )
         const isSameTypePieceOnTheSameFile = sameTypePieces.some(
           (s) => s.loc[0] === this.startingSqr.loc[0]

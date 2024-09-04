@@ -18,6 +18,9 @@ export class Game {
   public get board(): Board {
     return this._board
   }
+  public get moveHistory(): BoardUpdate[] {
+    return this._moveHistory
+  }
 
   public onBoardUpdated(handler: (game: Game) => void) {
     this._boardUpdatedHandlers.push(handler)
@@ -38,7 +41,7 @@ export class Game {
     )
       return
 
-    this._moveHistory.push(new Move(currentSqr, targetSqr, this.board))
+    this._moveHistory.push(new Move(currentSqr, targetSqr, this._board))
     this._board = this._moveHistory[this._moveHistory.length - 1].newBoard
 
     this.notifyBoardUpdated()

@@ -29,13 +29,15 @@ const onSqrClicked = (clickedSqr: SqrType) => {
 </script>
 
 <template>
-  <!--Must render rows in reverse since the array is initialized with a1 as the start-->
-  <div v-for="n in [...Array(8).keys()].reverse()">
-    <Sqr
-      v-for="sqr in game.board.slice(8 * n, 8 * (n + 1))"
-      :sqr="sqr"
-      :move-target="moveTargets.includes(sqr)"
-      v-on:click="onSqrClicked"
-    />
+  <div>
+    <!--Must render rows in reverse since the array is initialized with a1 as the start-->
+    <div v-for="n in [...Array(8).keys()].reverse()">
+      <Sqr
+        v-for="sqr in game.board.slice(8 * n, 8 * (n + 1))"
+        :sqr="sqr"
+        :move-target="moveTargets.includes(sqr)"
+        v-on:click="onSqrClicked"
+      />
+    </div>
   </div>
 </template>

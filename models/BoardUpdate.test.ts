@@ -34,6 +34,9 @@ describe("chess notation", () => {
       const d2 = board().findSqrAt("d2")
       game.movePiece(d2, board().findMoves(d2)[1])
 
+      // Black move
+      game.movePiece(board().findSqrAt("d7"), board().findMovesAt("d7")[1])
+
       const g1 = board().findSqrAt("g1")
       game.movePiece(g1, board().findSqrAt("f3"))
 
