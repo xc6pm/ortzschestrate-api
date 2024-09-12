@@ -11,7 +11,7 @@ export class Game {
 
   constructor() {
     this._moveHistory.push(new InitialBoard())
-    this._board = this._moveHistory[0].newBoard
+    this._board = this._moveHistory[0].updatedBoard
     this.gameId = generateId()
   }
 
@@ -41,8 +41,8 @@ export class Game {
     )
       return
 
-    this._moveHistory.push(new Move(currentSqr, targetSqr, this._board))
-    this._board = this._moveHistory[this._moveHistory.length - 1].newBoard
+    this._moveHistory.push(new Move(currentSqr, targetSqr, this.moveHistory[this.moveHistory.length - 1]))
+    this._board = this._moveHistory[this._moveHistory.length - 1].updatedBoard
 
     this.notifyBoardUpdated()
   }
