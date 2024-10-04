@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Game } from "~/models/Game"
+import { GameProcessor } from "~/models/GameProcessor"
 import type { Color } from "~/models/Piece"
 
 const { game, showCapturedBy } = defineProps<{
-  game: Game
+  game: GameProcessor
   showCapturedBy: Color
 }>()
 

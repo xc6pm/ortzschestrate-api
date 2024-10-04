@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Game } from "~/models/Game"
+import { GameProcessor } from "~/models/GameProcessor"
 import Sqr from "./Sqr.vue"
 import type { Sqr as SqrType } from "~/models/Square"
 
 const { game } = defineProps({
-  game: { type: Game, required: true },
+  game: { type: GameProcessor, required: true },
 })
 
 const sqrInFocus = ref<SqrType | null>(null)

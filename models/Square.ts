@@ -149,4 +149,14 @@ export class Sqr {
     copy.piece = other.piece
     return copy
   }
+
+  public toString() {
+    if (this.piece) {
+      return `${this.loc}: ${this.piece.color === "white" ? "w" : "b"} ${
+        this.piece.type
+      }`
+    }
+
+    return this.loc
+  }
 }

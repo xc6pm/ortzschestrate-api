@@ -4,25 +4,30 @@ import { Sqr, SqrLocEnum, type SqrLoc } from "./Square"
 import { findMoves } from "./moveFinder"
 
 export default class Board extends Array<Sqr> {
-  constructor(...items: Sqr[]) {
-    super(...items)
+  constructor(items: Array<Sqr> | number) {
+    if (items instanceof Array) super(...items)
+    else super(items)
     Object.setPrototypeOf(this, Board.prototype)
   }
 
-  findSqrAt = (sqrLoc: SqrLoc) => {
+  public findSqrAt(sqrLoc: SqrLoc) {
     return this[SqrLocEnum[sqrLoc]]
   }
 
-  findMoves = (sqr: Sqr) => {
+  public findMoves(sqr: Sqr) {
     return findMoves(this, sqr)
   }
 
-  findMovesAt = (sqrLoc: SqrLoc) => {
+  public findMovesAt(sqrLoc: SqrLoc) {
     const sqr = this.findSqrAt(sqrLoc)
     return this.findMoves(sqr)
   }
 
-  static setupNew = (): Board => {
+  public override toString() {
+    return `[${this.join(", ")}]`
+  }
+
+  public static setupNew(): Board {
     const sqrs = []
     for (let i = 0; i < 64; i++) {
       const sqr = new Sqr(SqrLocEnum[i] as SqrLoc)
@@ -55,6 +60,6 @@ export default class Board extends Array<Sqr> {
       }
     }
 
-    return new Board(...sqrs)
+    return new Board(sqrs)
   }
 }
