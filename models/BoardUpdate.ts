@@ -1,5 +1,5 @@
 import Board from "./Board"
-import { moveResultsInCheck } from "./CheckCalculator"
+import { isCheck } from "./checkCalculation"
 import { moveToNotation } from "./chessNotation"
 import type { Color, Piece } from "./Piece"
 import { Sqr } from "./Square"
@@ -60,7 +60,7 @@ export class Move implements BoardUpdate {
     }
     this.updatedBoard = this.calcNewBoard()
 
-    const checkState = moveResultsInCheck(this)
+    const checkState = isCheck(this)
     this.check = checkState.isCheck
     this.checkmate = checkState.isMate
   }

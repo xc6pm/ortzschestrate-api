@@ -24,7 +24,7 @@ interface CheckState {
   isMate: boolean
 }
 
-export function moveResultsInCheck(move: Move): CheckState {
+export function isCheck(move: Move): CheckState {
   const kingColor = move.subjectColor === "white" ? "black" : "white"
   return calcForColor(kingColor, move)
 }
@@ -47,7 +47,7 @@ function calcForColor(kingColor: Color, move: Move): CheckState {
       pieceMoves.forEach((m) => sqrsControlledByCheckingSide?.add(m.loc))
       if (pieceMoves.includes(king)) {
         isCheck = true
-        checkingPieces.push(move.startingSqr)
+        checkingPieces.push(sqr)
       }
 
       sqrsNeededForCheckmate = sqrsNeededForCheckmate.filter(

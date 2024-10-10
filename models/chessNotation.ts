@@ -3,11 +3,17 @@ import { Move, type BoardUpdate } from "./BoardUpdate"
 import type { Color, PieceType } from "./Piece"
 import type { Sqr, SqrLoc } from "./Square"
 import type Board from "./Board"
-import { isMoveImpossibleDueToPin } from "./CheckCalculator"
+import { isMoveImpossibleDueToPin } from "./checkCalculation"
 
 export function moveToNotation(move: Move) {
   const movedPiece = movedPieceSign(move)
-  return movedPiece + (move.targetSqr.piece ? "x" : "") + move.targetSqr.loc
+  const checkOrMateSign = move.checkmate ? "#" : move.check ? "+" : ""
+  return (
+    movedPiece +
+    (move.targetSqr.piece ? "x" : "") +
+    move.targetSqr.loc +
+    checkOrMateSign
+  )
 }
 
 export function notationToMove(
