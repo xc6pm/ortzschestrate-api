@@ -1,4 +1,4 @@
-using NuxtIntegration.Helpers;
+using Ortzschestrate.Api.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSpaStaticFiles(options=> options.RootPath = "client-app/dist");
+//builder.Services.AddSpaStaticFiles(options=> options.RootPath = "client-app/dist");
 
 var app = builder.Build();
 
@@ -20,15 +20,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseSpaStaticFiles();
-app.UseSpa(spa =>
-{
-    spa.Options.SourcePath = "client-app";
-    if (app.Environment.IsDevelopment())
-    {
-        spa.UseNuxtDevelopmentServer();
-    }
-});
 
 var summaries = new[]
 {
@@ -49,6 +40,16 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast")
 .WithOpenApi();
+
+//app.UseSpaStaticFiles();
+//app.UseSpa(spa =>
+//{
+//    spa.Options.SourcePath = "client-app";
+//    if (app.Environment.IsDevelopment())
+//    {
+//        spa.UseNuxtDevelopmentServer();
+//    }
+//});
 
 app.Run();
 
