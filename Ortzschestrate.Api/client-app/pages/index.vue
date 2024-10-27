@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const data = await $fetch("/weatherforecast");
+const { data } = await useFetch("/api/weatherforecast", { server: false });
+console.log("data: ", data);
 </script>
 
 <template>
