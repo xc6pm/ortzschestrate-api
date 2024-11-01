@@ -16,7 +16,7 @@ export default defineNuxtConfig({
     devProxy: {
       "/api/weatherforecast": {
         target: "https://localhost:7132/weatherforecast",
-        secure: false,
+        secure: true,
       },
     },
   },

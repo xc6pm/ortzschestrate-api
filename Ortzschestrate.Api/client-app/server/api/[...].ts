@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   console.log(target);
 
   try {
-    const res = await proxyRequest(event, target, {});
+    const res = await proxyRequest(event, target);
     console.log("res: ", res);
     return res;
   } catch (e) {
