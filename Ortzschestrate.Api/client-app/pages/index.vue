@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { data } = await useFetch("/api/weatherforecast", { server: false });
+const { data } = await useFetch("/api/weatherforecast", { server: true });
 console.log("data: ", data);
 </script>
 

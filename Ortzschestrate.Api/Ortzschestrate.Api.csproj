@@ -13,8 +13,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="8.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
@@ -24,6 +32,11 @@
     <None Remove="$(SpaRoot)**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
+
+   <ItemGroup>
+     <ProjectReference Include="..\Ortzschestrate.Data\Ortzschestrate.Data.csproj" />
+     <ProjectReference Include="..\Ortzschestrate.Utilities\Ortzschestrate.Utilities.csproj" />
+   </ItemGroup>
 
 	<!-- Spa configuration -->
 	<PropertyGroup>
@@ -37,18 +50,18 @@
 
 	<!-- Ensure the Spa dependencies are installed in development mode -->
 	<Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
-		<Message Importance="high" Text="Restoring dependencies using 'npm'."/>
-		<Exec WorkingDirectory="$(SpaRoot)" Command="npm install"/>
+		<Message Importance="high" Text="Restoring dependencies using 'npm'." />
+		<Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
 	</Target>
 
 	<!-- Set up the Spa build script when publishing -->
 	<Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
-		<Exec WorkingDirectory="$(SpaRoot)" Command="npm install --frozen-lockfile"/>
-		<Exec WorkingDirectory="$(SpaRoot)" Command="npm generate"/>
+		<Exec WorkingDirectory="$(SpaRoot)" Command="npm install --frozen-lockfile" />
+		<Exec WorkingDirectory="$(SpaRoot)" Command="npm generate" />
 
 		<!-- Include the dist files in the wwwroot directory -->
 		<ItemGroup>
-			<DistFiles Include="$(SpaRoot)dist\**"/>
+			<DistFiles Include="$(SpaRoot)dist\**" />
 			<ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
 				<RelativePath>wwwroot\%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
 				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

@@ -5,7 +5,11 @@ export default defineEventHandler(async (event) => {
   const target = proxyUrl + "/weatherforecast";
   console.log(target);
 
-  const res = await proxyRequest(event, target);
-  console.log("res: ", res);
-  return res;
+  try {
+    const res = await proxyRequest(event, target, {});
+    console.log("res: ", res);
+    return res;
+  } catch (e) {
+    console.log("proxy error: ", e);
+  }
 });
