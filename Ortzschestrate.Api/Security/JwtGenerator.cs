@@ -2,19 +2,21 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Ortzschestrate.Api.Utilities;
 
 namespace Ortzschestrate.Api.Security;
 
 public class JwtGenerator
 {
-    public const string ValidIssuer = "PomodoroBackend";
+    public const string ValidIssuer = "Ortzschestrate";
 
     private static readonly SigningCredentials authTokenSigningCredentials = new(
-        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("PB_JWT_SECRET")!)),
+        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable(EnvKeys.JwtSecret)!)),
         SecurityAlgorithms.HmacSha256);
 
     private static readonly SigningCredentials refreshTokenSigningCredentials = new(
-        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("PB_JWT_REFRESH_SECRET")!)),
+        new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable(EnvKeys.JwtRefreshSecret)!)),
         SecurityAlgorithms.HmacSha256);
 
     public static IssuedTokenResult GenerateAuthAndRefreshTokens(string userId) =>
