@@ -1,19 +1,19 @@
 <script setup lang="ts">
-const userResponse = await useFetch("/api/auth/user")
-const user = userResponse.data.value
-console.log("user", user)
-if (!user) {
-  console.log("no user found")
+const config = useRuntimeConfig()
+
+let user = null
+try {
+  user = await $fetch(config.public.apiUrl + "/auth/user", {credentials: "include"})
+  if (!user) {
+    await navigateTo("/login")
+  }
+} catch (ex) {
   await navigateTo("/login")
 }
-
-
 </script>
 
 <template>
   <h1>Welcome to ortzschestrate!</h1>
 
-  <h4>Create an account to start playing.</h4>
-  
   {{ user }}
 </template>

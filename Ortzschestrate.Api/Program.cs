@@ -26,11 +26,12 @@ builder.Services.AddAuthentication(options =>
     })
     .AddJwtBearer(options =>
     {
-#if DEBUG
         options.RequireHttpsMetadata = false;
-#endif
 
         options.SaveToken = true;
+        // Without this it changes the claim name from sub to username or something when we receive tokens.
+        // https://stackoverflow.com/q/57998262
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters()
         {
             ValidateAudience = false,
@@ -104,7 +105,7 @@ string devCorsPolicyName = "local dev client";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(devCorsPolicyName,
-        builder => builder.WithOrigins("https://localhost:3000").AllowAnyMethod().AllowAnyHeader());
+        builder => builder.WithOrigins("https://localhost:3000").AllowAnyHeader().AllowCredentials());
 });
 
 builder.Services.AddIdentityCore<User>(options => { options.User.RequireUniqueEmail = true; })

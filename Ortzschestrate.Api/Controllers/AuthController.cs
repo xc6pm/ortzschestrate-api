@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.Google;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Ortzschestrate.Api.Security;
-using Ortzschestrate.Data;
 using Ortzschestrate.Data.Models;
 using Ortzschestrate.Utilities.Security;
 
@@ -15,56 +16,82 @@ public class AuthController : ControllerBase
 {
     [HttpPost]
     public async Task<IResult> LoginAsync(
+        [FromBody] AuthReq creds,
         [FromServices] UserManager<User> userManager,
         [FromServices] IPasswordHasher<User> passwordHasher,
         [FromServices] AuthenticationHelper authenticationHelper)
     {
-        var user = extractAuthorizationInformationFromHeader();
-        var userWithThisEmail = await findUserByEmail(user.Email, userManager);
-        if (userWithThisEmail == null)
+        if ((String.IsNullOrWhiteSpace(creds.Email) && String.IsNullOrWhiteSpace(creds.Username)) ||
+            String.IsNullOrWhiteSpace(creds.Password))
         {
-            return Results.NotFound("A user with this email doesn't exist; try registering first");
+            return Results.BadRequest("All fields must have a value.");
+        }
+
+        User? user;
+        if (!String.IsNullOrWhiteSpace(creds.Email))
+        {
+            user = await userManager.FindByEmailAsync(creds.Email);
+        }
+        else
+        {
+            user = await userManager.FindByNameAsync(creds.Username);
+        }
+
+        if (user == null)
+        {
+            return Results.NotFound("A user with this email/username doesn't exist; try registering first");
         }
 
         // The user logged in with Google or something and has no password, we can't log in by username/password here
-        if (userWithThisEmail.PasswordHash == null)
+        if (user.PasswordHash == null)
         {
             return Results.Unauthorized();
         }
 
         if (passwordHasher.VerifyHashedPassword(
-                userWithThisEmail, userWithThisEmail.PasswordHash, user.Password) ==
+                user, user.PasswordHash, creds.Password) ==
             PasswordVerificationResult.Failed)
         {
             return Results.Unauthorized();
         }
 
-        authenticationHelper.AppendUserTokens(userWithThisEmail.Id, Response);
+        authenticationHelper.AppendUserTokens(user.Id, Response);
         return Results.Ok();
     }
 
+    [HttpPost]
     public async Task<IResult> RegisterAsync(
+        [FromBody] AuthReq creds,
         [FromServices] UserManager<User> userManager,
-        [FromServices] DbContext dbContext,
         [FromServices] AuthenticationHelper authenticationHelper)
     {
-        var user = extractAuthorizationInformationFromHeader();
-        var userWithThisEmail = await findUserByEmail(user.Email, userManager);
-        if (userWithThisEmail != null)
+        string[] values = [creds.Email, creds.Password, creds.Username];
+        if (values.Any(String.IsNullOrWhiteSpace))
         {
-            return Results.Conflict("A user with this email already exists");
+            return Results.BadRequest("All fields must have a value!");
         }
 
-        string normalizedEmail = user.Email.ToUpperInvariant();
+        if (creds.Username.Any(ch => !char.IsLetterOrDigit(ch) && ch != '-'))
+        {
+            return Results.BadRequest("The username should contains only letters, digits, or hyphen!");
+        }
+
         var newUser = new User()
         {
-            Email = user.Email,
-            NormalizedEmail = normalizedEmail
+            Email = creds.Email,
+            UserName = creds.Username
         };
 
-        dbContext.Users.Add(newUser);
-        await userManager.AddPasswordAsync(newUser, user.Password);
-        await dbContext.SaveChangesAsync();
+        var createUserResult = await userManager.CreateAsync(newUser, creds.Password);
+
+        if (!createUserResult.Succeeded)
+        {
+            // Existing email/username, and invalid (easy) passwords are within the Errors.
+            return Results.BadRequest(new
+            {
+                Errors = createUserResult.Errors.Select(error => error.Description).ToArray()
+            });
+        }
 
         authenticationHelper.AppendUserTokens(newUser.Id, Response);
         return Results.Ok();
@@ -80,20 +107,14 @@ public class AuthController : ControllerBase
 
     [ActionName("user")]
     [Authorize]
-    public IResult GetCurrentUser() =>
-        Results.Json(HttpContext.User.Claims.Select(c => new { c.Type, c.Value }).ToList());
-
-    private AuthorizationInformation extractAuthorizationInformationFromHeader()
+    public async Task<IResult> GetUserInfo([FromServices] UserManager<User> userManager)
     {
-        string encodedUsernamePassword =
-            Request.Headers.Authorization[0]!.Split(' ')[1];
-        string decoded = Base64UrlEncoder.Decode(encodedUsernamePassword);
-
-        // We expect an email instead of username often provided with basic authentication scheme.
-        string[] emailAndPassword = decoded.Split(':');
-
-        return new AuthorizationInformation(emailAndPassword[0], emailAndPassword[1]);
+        var user = await userManager.FindByIdAsync(HttpContext.User.Claims
+            .First(c => c.Type == JwtRegisteredClaimNames.Sub).Value);
+        return Results.Ok(new { user!.UserName, user.Email });
     }
+
+    public record AuthReq(string Email, string Password, string Username);
 
     private async Task<User?> findUserByEmail(
         string email, UserManager<User> userManager)
@@ -106,6 +127,4 @@ public class AuthController : ControllerBase
         var userWithThisEmail = await userManager.FindByEmailAsync(email);
         return userWithThisEmail;
     }
-
-    private record AuthorizationInformation(string Email, string Password);
 }
