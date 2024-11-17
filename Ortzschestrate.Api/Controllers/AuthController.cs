@@ -1,10 +1,8 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Ortzschestrate.Api.Security;
 using Ortzschestrate.Data.Models;
 using Ortzschestrate.Utilities.Security;
@@ -98,8 +96,9 @@ public class AuthController : ControllerBase
     }
 
     [ActionName("google")]
-    public IResult LoginWithGoogle() =>
-        Results.Challenge(new() { RedirectUri = "/" }, [GoogleDefaults.AuthenticationScheme]);
+    public IResult LoginWithGoogle([FromQuery] string redirect) =>
+        Results.Challenge(new() { RedirectUri = redirect },
+            [GoogleDefaults.AuthenticationScheme]);
 
     [HttpPost]
     public IResult RenewTokens(AuthenticationHelper authenticationHelper, HttpContext httpContext) =>

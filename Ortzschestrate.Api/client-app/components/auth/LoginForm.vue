@@ -2,6 +2,10 @@
 const config = useRuntimeConfig()
 
 const loginUrl = config.public.apiUrl + "/auth/login"
+const googleLoginUrl =
+  config.public.apiUrl +
+  "/auth/google?" +
+  new URLSearchParams({redirect: window.location.protocol + "//" + window.location.host})
 
 const emailOrUsername = ref("")
 const password = ref("")
@@ -62,9 +66,7 @@ const tryLogin = async () => {
     <button type="submit">Login</button>
   </form>
 
-  <NuxtLink to="https://localhost:7132/api/auth/google"
-    >Login with Google</NuxtLink
-  >
+  <NuxtLink :to="googleLoginUrl">Login with Google</NuxtLink>
 
   <ErrorBox ref="errorBox" />
 </template>

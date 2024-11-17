@@ -82,7 +82,7 @@ builder.Services.AddAuthentication(options =>
             if (userWithThisEmail != null)
             {
                 authenticationHelper.AppendUserTokens(userWithThisEmail.Id, context.Response);
-                context.Response.Redirect("/");
+                context.Response.Redirect(context.ReturnUri);
                 return;
             }
 
@@ -96,7 +96,7 @@ builder.Services.AddAuthentication(options =>
             await dbContext.SaveChangesAsync();
 
             authenticationHelper.AppendUserTokens(newUser.Id, context.Response);
-            context.Response.Redirect("/");
+            context.Response.Redirect(context.ReturnUri);
         };
     });
 builder.Services.AddAuthorization();
