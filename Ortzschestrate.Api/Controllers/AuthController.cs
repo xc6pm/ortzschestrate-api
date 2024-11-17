@@ -69,11 +69,6 @@ public class AuthController : ControllerBase
             return Results.BadRequest("All fields must have a value!");
         }
 
-        if (creds.Username.Any(ch => !char.IsLetterOrDigit(ch) && ch != '-'))
-        {
-            return Results.BadRequest("The username should contains only letters, digits, or hyphen!");
-        }
-
         var newUser = new User()
         {
             Email = creds.Email,

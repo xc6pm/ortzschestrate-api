@@ -18,6 +18,8 @@ builder.Services.AddDbContext<DbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
+string validUsernameChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -73,12 +75,12 @@ builder.Services.AddAuthentication(options =>
             // Need to handle this because UserManager.SignInAsync doesn't work with Jwt bearer.
             context.HandleResponse();
 
-            var email = context.Principal!.Claims.First(c => c.Type == ClaimTypes.Email).Value;
-            var dbContext = context.HttpContext.RequestServices.GetRequiredService<DbContext>();
+            var email = context.Principal!.Claims.First(c => c.Type == ClaimTypes.Email).Value.Trim();
+            var name = context.Principal!.Claims.First(c => c.Type == ClaimTypes.Name).Value.Trim();
+            var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<User>>();
             var authenticationHelper = context.HttpContext.RequestServices.GetRequiredService<AuthenticationHelper>();
 
-            var normalizedEmail = email.ToUpperInvariant();
-            var userWithThisEmail = dbContext.Users.FirstOrDefault(u => u.NormalizedEmail == normalizedEmail);
+            var userWithThisEmail = await userManager.FindByEmailAsync(email);
             if (userWithThisEmail != null)
             {
                 authenticationHelper.AppendUserTokens(userWithThisEmail.Id, context.Response);
@@ -89,11 +91,42 @@ builder.Services.AddAuthentication(options =>
             var newUser = new User()
             {
                 Email = email,
-                NormalizedEmail = normalizedEmail,
+                UserName = name.Replace(" ", "")
             };
 
-            dbContext.Users.Add(newUser);
-            await dbContext.SaveChangesAsync();
+            var result = await userManager.CreateAsync(newUser);
+            if (!result.Succeeded)
+            {
+                if (result.Errors.Take(2).Count() == 1 && (result.Errors.First().Code == "InvalidUsername" ||
+                                                           result.Errors.First().Code == "DuplicateUsername"))
+                {
+                    var googleNameContainsInvalidChars = newUser.UserName.Any(ch => !validUsernameChars.Contains(ch));
+                    var usernameBase = googleNameContainsInvalidChars ? newUser.Email.Split('@')[0] : newUser.UserName;
+                    bool shouldTryEmailWithoutGuidFirst = googleNameContainsInvalidChars;
+
+                    do
+                    {
+                        newUser.UserName = usernameBase +
+                                           (shouldTryEmailWithoutGuidFirst
+                                               ? ""
+                                               : Guid.NewGuid().ToString("N").Substring(0, 4));
+                        shouldTryEmailWithoutGuidFirst = false;
+                        result = await userManager.CreateAsync(newUser);
+                    } while (!result.Succeeded && (result.Errors.First().Code == "InvalidUsername" ||
+                                                   result.Errors.First().Code == "DuplicateUsername"));
+
+                    if (!result.Succeeded)
+                    {
+                        context.Fail(string.Join(" --- ", result.Errors));
+                        return;
+                    }
+                }
+                else
+                {
+                    context.Fail(string.Join(" --- ", result.Errors));
+                    return;
+                }
+            }
 
             authenticationHelper.AppendUserTokens(newUser.Id, context.Response);
             context.Response.Redirect(context.ReturnUri);
@@ -108,7 +141,11 @@ builder.Services.AddCors(options =>
         builder => builder.WithOrigins("https://localhost:3000").AllowAnyHeader().AllowCredentials());
 });
 
-builder.Services.AddIdentityCore<User>(options => { options.User.RequireUniqueEmail = true; })
+builder.Services.AddIdentityCore<User>(options =>
+    {
+        options.User.RequireUniqueEmail = true;
+        options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+    })
     .AddEntityFrameworkStores<DbContext>()
     .AddDefaultTokenProviders();
 
