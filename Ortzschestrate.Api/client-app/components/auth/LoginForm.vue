@@ -11,6 +11,8 @@ const emailOrUsername = ref("")
 const password = ref("")
 const errorBox = useTemplateRef("errorBox")
 
+const userStore = useUserStore()
+
 const tryLogin = async () => {
   const enteredValueIsEmail = isValidEmail(emailOrUsername.value)
 
@@ -31,7 +33,8 @@ const tryLogin = async () => {
       return
     }
 
-    navigateTo("/")
+    await userStore.fetch()
+    await navigateTo("/")
   } catch (ex) {
     console.log("login exception:", ex)
     errorBox.value!.showTransient("Email or password invalid!")

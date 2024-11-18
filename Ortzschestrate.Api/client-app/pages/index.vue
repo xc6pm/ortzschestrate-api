@@ -1,13 +1,8 @@
 <script setup lang="ts">
-const config = useRuntimeConfig()
+let userStore = useUserStore()
+await userStore.fetch()
 
-let user = null
-try {
-  user = await $fetch(config.public.apiUrl + "/auth/user", {credentials: "include"})
-  if (!user) {
-    await navigateTo("/login")
-  }
-} catch (ex) {
+if (!userStore.user) {
   await navigateTo("/login")
 }
 </script>
@@ -15,5 +10,5 @@ try {
 <template>
   <h1>Welcome to ortzschestrate!</h1>
 
-  {{ user }}
+  {{ userStore.user }}
 </template>

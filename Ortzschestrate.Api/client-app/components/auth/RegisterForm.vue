@@ -9,6 +9,8 @@ const password = ref("")
 const confirmedPassword = ref("")
 const errorBox = useTemplateRef("errorBox")
 
+const userStore = useUserStore()
+
 const tryRegister = async () => {
   if (password.value !== confirmedPassword.value) {
     errorBox.value!.showTransient("Retype your passwords")
@@ -32,11 +34,11 @@ const tryRegister = async () => {
       } else {
         errorBox.value!.showTransient("Registration failed!")
       }
-      console.log("register result: ", res)
       return
     }
 
-    navigateTo("/")
+    await userStore.fetch()
+    await navigateTo("/")
   } catch (ex) {
     console.log("register exception:", ex)
     errorBox.value!.showTransient("Registration failed!")
