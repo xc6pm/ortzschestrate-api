@@ -1,16 +1,51 @@
 <script setup lang="ts">
-import { useUserStore } from '~/stores/user';
+import { useUserStore } from "~/stores/user"
 
 let userStore = useUserStore()
 
 await userStore.fetch()
 
+const showDropdown = ref(false)
+
+watch(
+  showDropdown,
+  (newValue) => {
+    if (newValue) {
+      window.onclick = (evt) => {
+        if (
+          evt.target?.id === "profileButton" ||
+          evt.target?.parentElement?.id === "profileButton"
+        ) {
+          return
+        }
+
+        showDropdown.value = false
+      }
+    } else {
+      window.onclick = null
+    }
+  },
+  {}
+)
+
+const tryLogout = async () => {
+  await $fetch(apiUrl("/auth/logout"), {
+    method: "POST",
+    credentials: "include",
+  })
+
+  await userStore.fetch()
+
+  await navigateTo("login")
+}
 </script>
 
 <template>
   <button
     v-if="userStore.user"
     class="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg shadow-md focus:outline-none inline-flex"
+    @click="() => (showDropdown = !showDropdown)"
+    id="profileButton"
   >
     {{ userStore.user?.userName }}
     <svg
@@ -29,14 +64,27 @@ await userStore.fetch()
   </button>
 
   <div
-    class="absolute right-0 z-10 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none"
+    :class="[
+      'absolute',
+      'right-0',
+      'z-10',
+      'w-56',
+      'origin-top-right',
+      'rounded-md',
+      'bg-white',
+      'shadow-lg',
+      'ring-1',
+      'ring-black/5',
+      'focus:outline-none',
+      !showDropdown ? 'hidden' : '',
+    ]"
     role="menu"
     aria-orientation="vertical"
     aria-labelledby="menu-button"
     tabindex="-1"
   >
     <div class="py-1" role="none">
-      <form method="POST" action="#" role="none">
+      <form @submit.prevent="tryLogout">
         <button
           type="submit"
           class="block w-full px-4 py-2 text-left text-sm text-gray-700"
@@ -44,7 +92,7 @@ await userStore.fetch()
           tabindex="-1"
           id="menu-item-3"
         >
-          Sign out
+          logout
         </button>
       </form>
     </div>

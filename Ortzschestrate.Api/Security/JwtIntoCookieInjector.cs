@@ -36,4 +36,10 @@ public class JwtIntoCookieInjector(IDataProtectionProvider protectorProvider)
         request.Cookies.TryGetValue(RefreshTokenCookieKey, out string? value) && value != null
             ? _refreshTokenProtector.Unprotect(value)
             : null;
+
+    public void RemoveTokens(HttpResponse response)
+    {
+        response.Cookies.Delete(TokenCookieKey);
+        response.Cookies.Delete(RefreshTokenCookieKey);
+    }
 }

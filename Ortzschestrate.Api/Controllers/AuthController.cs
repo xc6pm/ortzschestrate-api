@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Ortzschestrate.Api.Security;
 using Ortzschestrate.Data.Models;
-using Ortzschestrate.Utilities.Security;
 
 namespace Ortzschestrate.Api.Controllers;
 
@@ -101,24 +100,20 @@ public class AuthController : ControllerBase
 
     [ActionName("user")]
     [Authorize]
-    public async Task<IResult> GetUserInfo([FromServices] UserManager<User> userManager)
+    public async Task<IResult> GetUserInfoAsync([FromServices] UserManager<User> userManager)
     {
         var user = await userManager.FindByIdAsync(HttpContext.User.Claims
             .First(c => c.Type == JwtRegisteredClaimNames.Sub).Value);
         return Results.Ok(new { user!.UserName, user.Email });
     }
 
-    public record AuthReq(string Email, string Password, string Username);
-
-    private async Task<User?> findUserByEmail(
-        string email, UserManager<User> userManager)
+    [HttpPost]
+    [Authorize]
+    public IResult Logout([FromServices] JwtIntoCookieInjector injector)
     {
-        if (!EmailValidator.IsValid(email))
-        {
-            return null;
-        }
-
-        var userWithThisEmail = await userManager.FindByEmailAsync(email);
-        return userWithThisEmail;
+        injector.RemoveTokens(Response);
+        return Results.Ok();
     }
+
+    public record AuthReq(string Email, string Password, string Username);
 }
