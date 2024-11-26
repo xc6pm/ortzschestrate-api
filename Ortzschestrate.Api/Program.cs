@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Ortzschestrate.Api.Hubs;
 using Ortzschestrate.Api.Security;
 using Ortzschestrate.Api.Utilities;
 using Ortzschestrate.Data.Models;
@@ -134,13 +135,6 @@ builder.Services.AddAuthentication(options =>
     });
 builder.Services.AddAuthorization();
 
-string devCorsPolicyName = "local dev client";
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(devCorsPolicyName,
-        builder => builder.WithOrigins("https://localhost:3000").AllowAnyHeader().AllowCredentials());
-});
-
 builder.Services.AddIdentityCore<User>(options =>
     {
         options.User.RequireUniqueEmail = true;
@@ -148,6 +142,16 @@ builder.Services.AddIdentityCore<User>(options =>
     })
     .AddEntityFrameworkStores<DbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddSignalR();
+
+string devCorsPolicyName = "local dev client";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(devCorsPolicyName,
+        builder => builder.WithOrigins("https://localhost:3000").AllowAnyHeader().AllowCredentials());
+});
+
 
 builder.Services.AddDataProtection();
 
@@ -176,6 +180,8 @@ app.UseHttpsRedirection();
 
 
 app.UseAuthorization();
+
+app.MapHub<GameHub>("/hubs/game");
 
 
 var summaries = new[]
