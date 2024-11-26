@@ -1,8 +1,6 @@
 namespace Ortzschestrate.Api.Models;
 
-public class Game
+public record Game(string Player1, string Player2)
 {
-    public string Player1 { get; set; }
-    public string Player2 { get; set; }
-    
+    public readonly string Id = Guid.NewGuid().ToString();
 }

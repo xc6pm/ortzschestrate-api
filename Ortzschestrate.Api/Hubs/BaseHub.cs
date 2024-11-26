@@ -8,10 +8,10 @@ namespace Ortzschestrate.Api.Hubs;
 
 public partial class GameHub : Hub
 {
-    private static readonly List<Player> _waitingPlayers = new();
-    private static readonly ConcurrentDictionary<string, Player> _players = new();
+    private static readonly ConcurrentDictionary<string, Player> _waitingPlayers = new();
+    private static readonly ConcurrentDictionary<string, Player> _connections = new();
     private static readonly ConcurrentDictionary<string, Game> _games = new();
-    private static readonly SemaphoreSlim lobbySemaphore = new(1, 1);
+    private static readonly SemaphoreSlim _lobbySemaphore = new(1, 1);
 
     private readonly IServiceProvider _serviceProvider;
 
@@ -25,15 +25,17 @@ public partial class GameHub : Hub
         await base.OnConnectedAsync();
         Debug.WriteLine($"New client connected");
         await Clients.All.SendAsync("PlayerJoinedLobby", Context.User!.GetSubClaim());
+        await Clients.Caller.SendAsync("LobbyUpdated", _connections.Values.ToList());
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         bool lobbyUpdated = false;
-        await lobbySemaphore.WaitAsync();
+        
+        await _lobbySemaphore.WaitAsync();
         try
         {
-            if (_players.TryGetValue(Context.ConnectionId, out var leavingPlayer))
+            if (_connections.TryGetValue(Context.ConnectionId, out var leavingPlayer))
             {
                 if (leavingPlayer.GameId != null)
                 {
@@ -41,18 +43,18 @@ public partial class GameHub : Hub
                 }
                 else
                 {
-                    _waitingPlayers.Remove(leavingPlayer);
+                    _waitingPlayers.TryRemove(Context.User.GetSubClaim(), out _);
                     lobbyUpdated = true;
                 }
 
-                _players.TryRemove(Context.ConnectionId, out _);
+                _connections.TryRemove(Context.ConnectionId, out _);
             }
         }
         finally
         {
-            lobbySemaphore.Release();
+            _lobbySemaphore.Release();
             if (lobbyUpdated)
-                await Clients.All.SendAsync("LobbyUpdated", _waitingPlayers.ToList());
+                await Clients.All.SendAsync("LobbyUpdated", _waitingPlayers.Values.ToList());
         }
 
         Debug.WriteLine("Connection closed");
