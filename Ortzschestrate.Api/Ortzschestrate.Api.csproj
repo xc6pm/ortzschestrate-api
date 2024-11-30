@@ -38,6 +38,10 @@
      <ProjectReference Include="..\Ortzschestrate.Utilities\Ortzschestrate.Utilities.csproj" />
    </ItemGroup>
 
+   <ItemGroup>
+     <Folder Include="Business\" />
+   </ItemGroup>
+
 	<!-- Spa configuration -->
 	<PropertyGroup>
 		<TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>

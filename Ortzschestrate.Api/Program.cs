@@ -32,9 +32,6 @@ builder.Services.AddAuthentication(options =>
         options.RequireHttpsMetadata = false;
 
         options.SaveToken = true;
-        // Without this it changes the claim name from sub to username or something when we receive tokens.
-        // https://stackoverflow.com/q/57998262
-        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters()
         {
             ValidateAudience = false,

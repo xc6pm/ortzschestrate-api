@@ -1,11 +1,13 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Ortzschestrate.Api.Models;
-using Ortzschestrate.Api.Utilities;
+using Ortzschestrate.Api.Security;
 
 namespace Ortzschestrate.Api.Hubs;
 
+[Authorize]
 public partial class GameHub : Hub
 {
     private static readonly ConcurrentDictionary<string, Player> _waitingPlayers = new();
@@ -24,7 +26,7 @@ public partial class GameHub : Hub
     {
         await base.OnConnectedAsync();
         Debug.WriteLine($"New client connected");
-        await Clients.All.SendAsync("PlayerJoinedLobby", Context.User!.GetSubClaim());
+        await Clients.All.SendAsync("PlayerJoinedLobby", Context.User!.FindId());
         await Clients.Caller.SendAsync("LobbyUpdated", _connections.Values.ToList());
     }
 
@@ -43,7 +45,7 @@ public partial class GameHub : Hub
                 }
                 else
                 {
-                    _waitingPlayers.TryRemove(Context.User.GetSubClaim(), out _);
+                    _waitingPlayers.TryRemove(Context.User!.FindId(), out _);
                     lobbyUpdated = true;
                 }
 

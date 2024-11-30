@@ -102,8 +102,7 @@ public class AuthController : ControllerBase
     [Authorize]
     public async Task<IResult> GetUserInfoAsync([FromServices] UserManager<User> userManager)
     {
-        var user = await userManager.FindByIdAsync(HttpContext.User.Claims
-            .First(c => c.Type == JwtRegisteredClaimNames.Sub).Value);
+        var user = await userManager.FindByIdAsync(HttpContext.User.FindId());
         return Results.Ok(new { user!.UserName, user.Email });
     }
 

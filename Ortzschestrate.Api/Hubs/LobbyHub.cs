@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Ortzschestrate.Api.Models;
-using Ortzschestrate.Api.Utilities;
+using Ortzschestrate.Api.Security;
 using Ortzschestrate.Data.Models;
 
 namespace Ortzschestrate.Api.Hubs;
@@ -12,8 +11,7 @@ public partial class GameHub : Hub
     [HubMethodName("create")]
     public async Task CreateGameAsync()
     {
-        await Clients.All.SendAsync("NewGameCreated",
-            Context.User.Claims.First(c => c.Type == JwtRegisteredClaimNames.Sub).Value);
+        await Clients.All.SendAsync("NewGameCreated", Context.User!.Identity!.Name);
 
         await _lobbySemaphore.WaitAsync();
         try
@@ -32,7 +30,7 @@ public partial class GameHub : Hub
 
             _connections[Context.ConnectionId] = player;
 
-            _waitingPlayers.TryAdd(Context.User.GetSubClaim(), player);
+            _waitingPlayers.TryAdd(Context.User.FindId(), player);
         }
         finally
         {
@@ -48,7 +46,7 @@ public partial class GameHub : Hub
         await _lobbySemaphore.WaitAsync();
         try
         {
-            _waitingPlayers.TryRemove(Context.User.GetSubClaim(), out _);
+            _waitingPlayers.TryRemove(Context.User.FindId(), out _);
         }
         finally
         {
@@ -86,7 +84,7 @@ public partial class GameHub : Hub
             // These may be overwritten while waiting for the semaphore so get them again.
             player1 = _connections[creatorConnectionId];
             player2 = await getOrCreateCurrentPlayerAsync();
-            if (_waitingPlayers.ContainsKey(Context.User.GetSubClaim()))
+            if (_waitingPlayers.ContainsKey(Context.User!.FindId()))
             {
                 throw new HubException("Cancel the game you created first.");
             }
@@ -99,7 +97,7 @@ public partial class GameHub : Hub
 
             if (_waitingPlayers.TryRemove(player1.UserId, out player1))
             {
-                var game = new Game(player1.ConnectionId, player2.ConnectionId);
+                var game = new Game(player1.UserId, player2.UserId);
                 player1.GameId = player2.GameId = game.Id;
                 _games[game.Id] = game;
                 succeeded = true;
@@ -135,7 +133,7 @@ public partial class GameHub : Hub
     {
         var userManager = _serviceProvider.GetRequiredService<UserManager<User>>();
 
-        var userId = Context.User!.GetSubClaim();
+        var userId = Context.User!.FindId();
         var userFromDb = await userManager.FindByIdAsync(userId);
 
         var player = new Player(Context.ConnectionId, userId, userFromDb!.UserName!);
