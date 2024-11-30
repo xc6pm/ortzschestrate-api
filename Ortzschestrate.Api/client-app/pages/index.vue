@@ -8,11 +8,11 @@ if (!userStore.user) {
   await navigateTo("/login")
 }
 
-const connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7132/hubs/game").build()
+const connectionStore = useConnectionStore()
 
-await connection.start()
+const connection = await connectionStore.resolveConnection()
 
-type Player = {connectionId: string, userId: string, name: string}
+type Player = { connectionId: string; userId: string; name: string }
 
 const pendingGames = ref<Player[]>([])
 
@@ -25,14 +25,20 @@ connection.on("LobbyUpdated", (waitingPlayers: Player[]) => {
   pendingGames.value = waitingPlayers
 })
 
+connection.on("GameStarted", (game) => {
+  console.log("Game started", game)
+  navigateTo("/game/" + game.id)
+})
+
 const matchUp = async () => {
   await connection.invoke("create")
   console.log("create invoked")
 }
 
 const joinGame = async (opponentConnectionId: string) => {
-  await connection.invoke("join", opponentConnectionId)
-  console.log("join invoked")
+  const game = await connection.invoke("join", opponentConnectionId)
+  console.log("join invoked", game)
+  navigateTo("/game/" + game.id)
 }
 
 const cancelGame = async () => {
@@ -46,15 +52,22 @@ const cancelGame = async () => {
 
   <button @click="matchUp">create game!</button>
 
-  <br>
+  <br />
 
   <h3>Open Games</h3>
-  
+
   <ul>
     <li v-for="player of pendingGames" :key="player.connectionId">
-      {{ player.name }} 
-      <button class="mr-2" @click="() => joinGame(player.connectionId)">join</button>
-      <button v-if="connection.connectionId === player.connectionId" @click="cancelGame">cancel</button>
+      {{ player.name }}
+      <button class="mr-2" @click="() => joinGame(player.connectionId)">
+        join
+      </button>
+      <button
+        v-if="connection.connectionId === player.connectionId"
+        @click="cancelGame"
+      >
+        cancel
+      </button>
     </li>
   </ul>
 </template>

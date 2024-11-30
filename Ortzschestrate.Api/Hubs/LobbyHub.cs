@@ -77,7 +77,7 @@ public partial class GameHub : Hub
             throw new HubException("Can't join your own game.");
         }
 
-        bool succeeded = false;
+        Game? startingGame = null;
         await _lobbySemaphore.WaitAsync();
         try
         {
@@ -97,11 +97,10 @@ public partial class GameHub : Hub
 
             if (_waitingPlayers.TryRemove(player1.UserId, out player1))
             {
-                var game = new Game(player1.UserId, player2.UserId);
-                player1.GameId = player2.GameId = game.Id;
-                _games[game.Id] = game;
-                succeeded = true;
-                return game;
+                startingGame = new Game(player1, player2);
+                player1.GameId = player2.GameId = startingGame.Id;
+                _games[startingGame.Id] = startingGame;
+                return startingGame;
             }
             else // Player1 already started another game.
             {
@@ -111,10 +110,13 @@ public partial class GameHub : Hub
         finally
         {
             _lobbySemaphore.Release();
-            if (succeeded)
+            // Want to execute these tasks outside the semaphore and before the return.
+            if (startingGame != null)
+            {
                 await Clients.All.SendAsync("LobbyUpdated", _waitingPlayers.Values.ToList());
+                await Clients.User(startingGame.Player1.UserId).SendAsync("GameStarted", startingGame);
+            }
         }
-
     }
 
     private async Task<Player> getOrCreateCurrentPlayerAsync()
@@ -136,7 +138,7 @@ public partial class GameHub : Hub
         var userId = Context.User!.FindId();
         var userFromDb = await userManager.FindByIdAsync(userId);
 
-        var player = new Player(Context.ConnectionId, userId, userFromDb!.UserName!);
+        var player = new Player(userId, userFromDb!.UserName!);
 
         return player;
     }
