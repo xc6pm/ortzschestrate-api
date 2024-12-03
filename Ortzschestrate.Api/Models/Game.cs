@@ -1,4 +1,5 @@
 using Chess;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Ortzschestrate.Api.Models;
 
@@ -40,6 +41,13 @@ public class Game
             throw new ArgumentException("It's not your turn.");
         }
 
-        return _board.Move(move);
+        try
+        {
+            return _board.Move(move);
+        }
+        catch (ChessSanNotFoundException e)
+        {
+            throw new HubException("Invalid move!");
+        }
     }
 }
