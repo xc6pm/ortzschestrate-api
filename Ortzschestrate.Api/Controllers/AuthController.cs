@@ -1,5 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Authentication.Google;
+﻿using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -103,7 +102,7 @@ public class AuthController : ControllerBase
     public async Task<IResult> GetUserInfoAsync([FromServices] UserManager<User> userManager)
     {
         var user = await userManager.FindByIdAsync(HttpContext.User.FindId());
-        return Results.Ok(new { user!.UserName, user.Email });
+        return Results.Ok(new { user!.Id, user.UserName, user.Email });
     }
 
     [HttpPost]

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Ortzschestrate.Api.Hubs;
+using Ortzschestrate.Api.Hubs.Game;
 using Ortzschestrate.Api.Security;
 using Ortzschestrate.Api.Utilities;
 using Ortzschestrate.Data.Models;
@@ -155,6 +156,8 @@ builder.Services.AddDataProtection();
 
 builder.Services.AddSingleton<JwtIntoCookieInjector>();
 builder.Services.AddSingleton<AuthenticationHelper>();
+
+builder.Services.AddSingleton<PlayerCache>();
 
 builder.Services.AddControllers();
 

@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.SignalR;
-using Ortzschestrate.Api.Models;
 using Ortzschestrate.Api.Security;
 
 namespace Ortzschestrate.Api.Hubs;
 
-public partial class GameHub : Hub
+public partial class GameHub
 {
     [HubMethodName("move")]
-    public Game MoveAsync(string gameId, string move)
+    public Models.Game MoveAsync(string gameId, string move)
     {
         if (string.IsNullOrWhiteSpace(gameId) || string.IsNullOrWhiteSpace(move))
             throw new HubException("GameId and move must be given.");

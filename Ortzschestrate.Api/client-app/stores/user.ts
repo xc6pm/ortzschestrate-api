@@ -1,4 +1,4 @@
-export type User = { userName: string; email: string }
+export type User = { id: string; userName: string; email: string }
 
 export const useUserStore = defineStore("userStore", () => {
   const user = ref<User | null>(null)
