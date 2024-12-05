@@ -5,8 +5,25 @@ namespace Ortzschestrate.Api.Hubs;
 
 public partial class GameHub
 {
+    [HubMethodName("getGame")]
+    public object GetOngoingGame(string gameId)
+    {
+        var game = _games[gameId];
+        if (game.Player1ConnectionId == Context.ConnectionId)
+        {
+            return new { Color = game.Player1Color.AsChar, Opponent = game.Player2.Name };
+        }
+
+        if (game.Player2ConnectionId == Context.ConnectionId)
+        {
+            return new { Color = game.Player2Color.AsChar, Opponent = game.Player1.Name };
+        }
+
+        throw new HubException("Couldn't find that game.");
+    }
+
     [HubMethodName("move")]
-    public Models.Game MoveAsync(string gameId, string move)
+    public async Task MoveAsync(string gameId, string move)
     {
         if (string.IsNullOrWhiteSpace(gameId) || string.IsNullOrWhiteSpace(move))
             throw new HubException("GameId and move must be given.");
@@ -23,9 +40,10 @@ public partial class GameHub
         {
             throw new HubException(e.Message);
         }
+
         if (!success)
             throw new HubException("Couldn't make that move.");
 
-        return game;
+        await Clients.Group($"game_{gameId}").PlayerMoved(move);
     }
 }

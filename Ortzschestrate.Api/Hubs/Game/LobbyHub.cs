@@ -15,8 +15,6 @@ public partial class GameHub
         if (!PieceColor.TryFromName(creatorColor, out PieceColor color))
             throw new HubException("The creatorColor argument is invalid.");
 
-        await Clients.All.SendAsync("NewGameCreated", Context.User!.Identity!.Name);
-
         await _lobbySemaphore.WaitAsync();
         try
         {
@@ -34,7 +32,7 @@ public partial class GameHub
             _lobbySemaphore.Release();
         }
 
-        await Clients.All.SendAsync("LobbyUpdated", _pendingGamesByCreatorConnectionId.Values.ToList());
+        await Clients.All.LobbyUpdated(_pendingGamesByCreatorConnectionId.Values.ToList());
     }
 
     [HubMethodName("cancel")]
@@ -60,7 +58,7 @@ public partial class GameHub
             _lobbySemaphore.Release();
         }
 
-        await Clients.All.SendAsync("LobbyUpdated", _pendingGamesByCreatorConnectionId.Values.ToList());
+        await Clients.All.LobbyUpdated(_pendingGamesByCreatorConnectionId.Values.ToList());
     }
 
     [HubMethodName("join")]
@@ -69,7 +67,7 @@ public partial class GameHub
     // - Is the creator the same connection/user that wants to join. -- that's invalid can be checked outside semaphore.
     // - Does the user have a pending game -- inside semaphore for updates to take place. user must cancel the pending game first
     // - Is the user already playing another game. -- inside the semaphore we must ensure we apply the latest updates. Only one game per user is allowed rn
-    public async Task<Models.Game> JoinGameAsync(string creatorId, string creatorConnectionId)
+    public async Task<string> JoinGameAsync(string creatorId, string creatorConnectionId)
     {
         if (creatorConnectionId == Context.ConnectionId)
         {
@@ -107,7 +105,7 @@ public partial class GameHub
                 player1.OngoingGamesByConnectionId[creatorConnectionId] = startingGame;
                 player2.OngoingGamesByConnectionId[Context.ConnectionId] = startingGame;
                 _games[startingGame.Id] = startingGame;
-                return startingGame;
+                return startingGame.Id;
             }
             else // Player1 already started another game.
             {
@@ -120,8 +118,11 @@ public partial class GameHub
             // Want to execute these tasks outside the semaphore and before the return.
             if (startingGame != null)
             {
-                await Clients.All.SendAsync("LobbyUpdated", _pendingGamesByCreatorConnectionId.Values.ToList());
-                await Clients.User(startingGame.Player1.UserId).SendAsync("GameStarted", startingGame);
+                await Groups.AddToGroupAsync(creatorConnectionId, $"game_{startingGame.Id}");                
+                await Groups.AddToGroupAsync(Context.ConnectionId, $"game_{startingGame.Id}");
+                await Clients.All.LobbyUpdated(_pendingGamesByCreatorConnectionId.Values.ToList());
+                await Clients.User(startingGame.Player1.UserId)
+                    .GameStarted(startingGame.Id);
             }
         }
     }

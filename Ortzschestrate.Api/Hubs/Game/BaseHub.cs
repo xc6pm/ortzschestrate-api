@@ -9,7 +9,7 @@ using Ortzschestrate.Api.Security;
 namespace Ortzschestrate.Api.Hubs;
 
 [Authorize]
-public partial class GameHub : Hub
+public partial class GameHub : Hub<IGameClient>
 {
     private static readonly ConcurrentDictionary<string, PendingGame> _pendingGamesByCreatorConnectionId = new();
     private static readonly ConcurrentDictionary<string, Models.Game> _games = new();
@@ -26,8 +26,6 @@ public partial class GameHub : Hub
         await base.OnConnectedAsync();
         await _playerCache.OnNewConnectionAsync(Context);
         Debug.WriteLine($"New client connected");
-        await Clients.All.SendAsync("PlayerJoinedLobby", Context.User!.FindId());
-        await Clients.Caller.SendAsync("LobbyUpdated", _pendingGamesByCreatorConnectionId.Values.ToList());
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -54,7 +52,7 @@ public partial class GameHub : Hub
             _lobbySemaphore.Release();
             _playerCache.OnDisconnect(Context);
             if (lobbyUpdated)
-                await Clients.All.SendAsync("LobbyUpdated", _pendingGamesByCreatorConnectionId.Values.ToList());
+                await Clients.All.LobbyUpdated(_pendingGamesByCreatorConnectionId.Values.ToList());
         }
 
         Debug.WriteLine("Connection closed");

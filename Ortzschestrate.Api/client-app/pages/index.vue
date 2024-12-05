@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import * as signalR from "@microsoft/signalr"
+import type { PendingGame } from "~/types/Game"
 
 let userStore = useUserStore()
 await userStore.fetch()
@@ -12,14 +12,6 @@ const connectionStore = useConnectionStore()
 
 const connection = await connectionStore.resolveConnection()
 
-type Player = { userId: string; name: string }
-type PendingGame = {
-  creator: Player
-  creatorConnectionId: string
-  gameType: string
-  creatorColor: string
-}
-
 const pendingGames = ref<PendingGame[]>([])
 
 connection.on("NewGameCreated", (creator) => {
@@ -31,9 +23,9 @@ connection.on("LobbyUpdated", (updatedPendingGames: PendingGame[]) => {
   pendingGames.value = updatedPendingGames
 })
 
-connection.on("GameStarted", (game) => {
-  console.log("Game started", game)
-  navigateTo("/game/" + game.id)
+connection.on("GameStarted", (gameId) => {
+  console.log("Game started", gameId)
+  navigateTo("/game/" + gameId)
 })
 
 const matchUp = async () => {
@@ -42,9 +34,9 @@ const matchUp = async () => {
 }
 
 const joinGame = async (opponentUserId: string, opponentConnectionId: string) => {
-  const game = await connection.invoke("join", opponentUserId, opponentConnectionId)
-  console.log("join invoked", game)
-  navigateTo("/game/" + game.id)
+  const gameId = await connection.invoke("join", opponentUserId, opponentConnectionId)
+  console.log("join invoked", gameId)
+  navigateTo("/game/" + gameId)
 }
 
 const cancelGame = async (creatorConnectionId: string) => {
