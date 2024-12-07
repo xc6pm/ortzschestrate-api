@@ -28,6 +28,7 @@ public class Game
     public PieceColor Player2Color { get; }
 
     public string Pgn => _board.ToPgn();
+    public EndGameInfo? EndGame => _board.EndGame;
 
     public bool Move(string userId, string move)
     {

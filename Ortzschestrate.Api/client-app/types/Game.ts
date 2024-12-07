@@ -10,3 +10,18 @@ export type Game = {
   color: string
   opponent: string
 }
+
+export type GameEnding =
+  | "Checkmate"
+  | "Resigned"
+  | "Timeout"
+  | "Stalemate"
+  | "DrawDeclared"
+  | "InsufficientMaterial"
+  | "FiftyMoveRule"
+  | "Repetition"
+
+export type GameResult = {
+  result: GameEnding
+  wonSide?: "w" | "b"
+}

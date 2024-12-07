@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Ortzschestrate.Api.Hubs.Game;
 using Ortzschestrate.Api.Models;
-using Ortzschestrate.Api.Security;
 
 namespace Ortzschestrate.Api.Hubs;
 
@@ -26,6 +25,8 @@ public partial class GameHub : Hub<IGameClient>
         await base.OnConnectedAsync();
         await _playerCache.OnNewConnectionAsync(Context);
         Debug.WriteLine($"New client connected");
+        // To send the pending games to the newly joined client.
+        await Clients.Caller.LobbyUpdated(_pendingGamesByCreatorConnectionId.Values.ToList());
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)

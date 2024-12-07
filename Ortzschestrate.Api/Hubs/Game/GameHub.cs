@@ -45,5 +45,11 @@ public partial class GameHub
             throw new HubException("Couldn't make that move.");
 
         await Clients.Group($"game_{gameId}").PlayerMoved(move);
+
+        if (game.EndGame != null)
+        {
+            await Clients.Group($"game_{gameId}")
+                .GameEnded(new(game.EndGame.EndgameType.ToString(), game.EndGame.WonSide?.AsChar));
+        }
     }
 }

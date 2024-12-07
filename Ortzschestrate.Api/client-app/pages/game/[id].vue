@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { BoardApi, TheChessboard, type BoardConfig } from "vue3-chessboard"
 import "vue3-chessboard/style.css"
-import type { Game } from "~/types/Game"
+import type { Game, GameResult } from "~/types/Game"
 
 const route = useRoute()
 const gameId = route.params.id
@@ -19,23 +19,28 @@ const boardConfig: BoardConfig = {
   predroppable: { enabled: false },
 }
 
-const move = ref("")
-
 let boardApi: BoardApi | undefined
 
-connection.on("PlayerMoved", (_move) => {
-  console.log("new move", _move)
-  if (boardApi?.getLastMove() === _move) {
+connection.on("PlayerMoved", (move) => {
+  console.log("new move", move)
+  if (boardApi?.getLastMove() === move) {
     return
   }
 
-  boardApi?.move(_move)
+  boardApi?.move(move)
 })
 
-const sendMove = async () => {
-  const updatedGame = await connection.invoke("move", gameId, move.value)
-  console.log("move invoked ", updatedGame)
-}
+const gameResult = ref<string | null>(null)
+
+connection.on("GameEnded", (res: GameResult) => {
+  console.log("game ended", res)
+  if (res.wonSide) {
+    gameResult.value =
+      (res.wonSide === "w" ? "White" : "Black") + " won by " + (res.result === "Resigned" ? "resignation" : res.result)
+  } else {
+    gameResult.value = "Draw by " + res.result
+  }
+})
 
 const onMove = async (move) => {
   console.log("onMove", move)
@@ -46,16 +51,14 @@ const onMove = async (move) => {
   await connection.invoke("move", gameId, move.san)
   console.log("move invoked")
 }
+
+const goBackClicked = () => {
+  navigateTo("/")
+}
 </script>
 
 <template>
   Game {{ gameId }}
-
-  <p>Type in your move:</p>
-  <form @submit.prevent="sendMove">
-    <input type="text" v-model="move" />
-    <button type="submit">send</button>
-  </form>
 
   <TheChessboard
     :player-color="playerColor"
@@ -63,4 +66,6 @@ const onMove = async (move) => {
     @move="onMove"
     @board-created="(api) => (boardApi = api)"
   />
+
+  <p v-if="gameResult">{{ gameResult }} <button @click="goBackClicked">go back</button></p>
 </template>
