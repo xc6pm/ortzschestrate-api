@@ -1,18 +1,21 @@
 <script setup lang="ts">
-import UserButton from '~/components/auth/UserButton.vue';
-
+import UserButton from "~/components/auth/UserButton.vue"
 </script>
 
 <template>
   <header class="bg-gray-800 text-white py-4 shadow-md">
     <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
       <div class="text-3xl font-bold text-green-400">ortzschestrate</div>
-      
+
       <div class="relative">
-        <UserButton/>
+        <UserButton />
       </div>
     </div>
   </header>
 
-  <slot />
+  <UContainer :ui="{padding: 'px-4', strategy: 'override'}">
+    <slot />
+  </UContainer>
+
+  <UNotifications />
 </template>

@@ -26,6 +26,10 @@ export default defineNuxtConfig({
       },
   },
 
+  ui: {
+    safelistColors: ["oxford-blue"]
+  },
+
   ssr: false,
-  modules: ["@nuxtjs/tailwindcss", "@pinia/nuxt"]
+  modules: ["@pinia/nuxt", "@nuxt/ui"]
 });

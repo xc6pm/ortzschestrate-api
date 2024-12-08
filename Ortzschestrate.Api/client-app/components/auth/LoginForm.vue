@@ -1,35 +1,48 @@
 <script setup lang="ts">
+import type { FormSubmitEvent } from "#ui/types"
+
 const config = useRuntimeConfig()
 
-const loginUrl = config.public.apiUrl + "/auth/login"
+const loginUrl = apiUrl("/auth/login")
 const googleLoginUrl =
   config.public.apiUrl +
   "/auth/google?" +
-  new URLSearchParams({redirect: window.location.protocol + "//" + window.location.host})
+  new URLSearchParams({ redirect: window.location.protocol + "//" + window.location.host })
 
-const emailOrUsername = ref("")
-const password = ref("")
-const errorBox = useTemplateRef("errorBox")
+const state = reactive({
+  emailOrUsername: "",
+  password: "",
+})
+const toast = useToast()
+const tryingLogin = ref(false)
 
 const userStore = useUserStore()
 
-const tryLogin = async () => {
-  const enteredValueIsEmail = isValidEmail(emailOrUsername.value)
+const tryLogin = async (event: FormSubmitEvent<any>) => {
+  event.preventDefault()
+
+  tryingLogin.value = true
+  const enteredValueIsEmail = isValidEmail(state.emailOrUsername)
 
   try {
     const res = await $fetch.raw(loginUrl, {
       method: "POST",
       body: JSON.stringify({
-        password: password.value,
-        email: enteredValueIsEmail ? emailOrUsername.value : "",
-        username: !enteredValueIsEmail ? emailOrUsername.value : "",
+        password: state.password,
+        email: enteredValueIsEmail ? state.emailOrUsername : "",
+        username: !enteredValueIsEmail ? state.emailOrUsername : "",
       }),
       credentials: "include",
     })
 
     if (res.status !== 200) {
       console.log("Login result:", res)
-      errorBox.value!.showTransient("Email or password invalid!")
+      toast.add({
+        description: "Login failed! Invalid credentials.",
+        color: "red",
+        timeout: 5000,
+        icon: "i-heroicons-x-circle",
+      })
       return
     }
 
@@ -37,41 +50,31 @@ const tryLogin = async () => {
     await navigateTo("/")
   } catch (ex) {
     console.log("login exception:", ex)
-    errorBox.value!.showTransient("Email or password invalid!")
+    toast.add({
+      description: "Login failed! Invalid credentials.",
+      color: "red",
+      timeout: 5000,
+      icon: "i-heroicons-x-circle",
+    })
+  } finally {
+    tryingLogin.value = false
   }
 }
 </script>
 
 <template>
-  <form method="post" @submit.prevent="tryLogin">
-    <h3>Login</h3>
+  <UForm @submit="tryLogin" class="px-3 pt-3" :state="state">
+    <UFormGroup label="Email or username:" name="emailOrUsername" class="mb-3">
+      <UInput v-model="state.emailOrUsername" type="text" required autofocus />
+    </UFormGroup>
+    <UFormGroup label="Password:" name="password" class="mb-5">
+      <UInput v-model="state.password" type="password" required />
+    </UFormGroup>
 
-    <p>
-      <input
-        type="text"
-        autocomplete="off"
-        placeholder="Email or username"
-        v-model="emailOrUsername"
-        autofocus
-        required
-      />
-    </p>
-    <p>
-      <input
-        type="password"
-        autocomplete="off"
-        placeholder="Password"
-        v-model="password"
-        required
-      />
-    </p>
+    <UButton type="submit" block class="mb-3" :loading="tryingLogin" size="lg">Login</UButton>
 
-    <button type="submit">Login</button>
-  </form>
-
-  <NuxtLink :to="googleLoginUrl">Login with Google</NuxtLink>
-
-  <ErrorBox ref="errorBox" />
+    <UButton :to="googleLoginUrl" color="white" block :disabled="tryingLogin" size="lg">Login with Google</UButton>
+  </UForm>
 </template>
 
 <style scoped></style>

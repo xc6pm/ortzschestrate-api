@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@microsoft/signalr": "^8.0.7",
-    "@nuxtjs/tailwindcss": "^6.12.2",
+    "@nuxt/ui": "^2.19.2",
     "@pinia/nuxt": "^0.7.0",
     "nuxt": "^3.13.0",
     "vue": "latest",

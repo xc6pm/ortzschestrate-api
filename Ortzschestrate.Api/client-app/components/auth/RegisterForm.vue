@@ -1,19 +1,25 @@
 <script setup lang="ts">
+import type { FormSubmitEvent } from "#ui/types"
+
 const config = useRuntimeConfig()
 
 const registerUrl = config.public.apiUrl + "/auth/register"
 
-const email = ref("")
-const username = ref("")
-const password = ref("")
-const confirmedPassword = ref("")
-const errorBox = useTemplateRef("errorBox")
+const state = reactive({
+  email: "",
+  username: "",
+  password: "",
+  confirmedPassword: "",
+})
+const toast = useToast()
 
 const userStore = useUserStore()
 
-const tryRegister = async () => {
-  if (password.value !== confirmedPassword.value) {
-    errorBox.value!.showTransient("Retype your passwords")
+const tryRegister = async (event: FormSubmitEvent<any>) => {
+  event.preventDefault()
+
+  if (state.password !== state.confirmedPassword) {
+    toast.add({ description: "Retype your passwords", color: "red", icon: "i-heroicons-x-circle" })
     return
   }
 
@@ -21,18 +27,18 @@ const tryRegister = async () => {
     const res = await $fetch.raw(registerUrl, {
       method: "POST",
       body: JSON.stringify({
-        email: email.value,
-        password: password.value,
-        username: username.value,
+        email: state.email,
+        password: state.password,
+        username: state.username,
       }),
       credentials: "include",
     })
 
     if (res.status !== 200) {
       if (res.status === 409) {
-        errorBox.value!.showTransient("User already exists!")
+        toast.add({ description: "User already exists!", color: "red", icon: "i-heroicons-x-circle" })
       } else {
-        errorBox.value!.showTransient("Registration failed!")
+        toast.add({ description: "Registration failed!", color: "red", icon: "i-heroicons-x-circle" })
       }
       return
     }
@@ -41,56 +47,28 @@ const tryRegister = async () => {
     await navigateTo("/")
   } catch (ex) {
     console.log("register exception:", ex)
-    errorBox.value!.showTransient("Registration failed!")
+    toast.add({ description: "Registration failed!", color: "red", icon: "i-heroicons-x-circle" })
   }
 }
 </script>
 
 <template>
-  <form method="post" @submit.prevent="tryRegister">
-    <h3>Register</h3>
+  <UForm @submit="tryRegister" :state="state" class="px-3 pt-3">
+    <UFormGroup label="Email:" name="email" class="mb-3">
+      <UInput type="email" autofocus v-model="state.email" required />
+    </UFormGroup>
+    <UFormGroup label="Username:" name="username" class="mb-3">
+      <UInput type="text" v-model="state.username" required />
+    </UFormGroup>
+    <UFormGroup label="Password:" name="password" class="mb-3">
+      <UInput type="text" v-model="state.password" required />
+    </UFormGroup>
+    <UFormGroup label="Confirm Password:" name="confirmPassword" class="mb-5">
+      <UInput type="text" v-model="state.confirmedPassword" required />
+    </UFormGroup>
 
-    <p>
-      <input
-        type="email"
-        autocomplete="off"
-        autofocus
-        placeholder="Email address"
-        name="email"
-        v-model="email"
-      />
-    </p>
-    <p>
-      <input
-        type="text"
-        autocomplete="off"
-        placeholder="Username"
-        name="email"
-        v-model="username"
-      />
-    </p>
-    <p>
-      <input
-        type="password"
-        autocomplete="off"
-        placeholder="Password"
-        name="password"
-        v-model="password"
-      />
-    </p>
-    <p>
-      <input
-        type="password"
-        autocomplete="off"
-        placeholder="Confirm password"
-        v-model="confirmedPassword"
-      />
-    </p>
-
-    <button type="submit">Register</button>
-
-    <ErrorBox ref="errorBox" />
-  </form>
+    <UButton type="submit" block size="lg">Register</UButton>
+  </UForm>
 </template>
 
 <style scoped></style>
