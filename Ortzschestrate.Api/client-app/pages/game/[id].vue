@@ -6,6 +6,7 @@ import type { Game, GameResult, GameUpdate } from "~/types/Game"
 const route = useRoute()
 const gameId = route.params.id
 
+const userStore = useUserStore()
 const connectionStore = useConnectionStore()
 const connection = await connectionStore.resolveConnection()
 
@@ -21,13 +22,23 @@ const boardConfig: BoardConfig = {
 
 let boardApi: BoardApi | undefined
 
+const opponentTime = ref(formatMilliseconds(game.timeInMilliseconds))
+const playerTime = ref(formatMilliseconds(game.timeInMilliseconds))
+const isPlayersTurn = ref(playerColor === "white")
+
 connection.on("PlayerMoved", (gameUpdate: GameUpdate) => {
   console.log("new move", gameUpdate)
+
   if (boardApi?.getLastMove()?.san === gameUpdate.san) {
+    playerTime.value = formatMilliseconds(gameUpdate.remainingTimeInMilliseconds)
+    isPlayersTurn.value = false
     return
+  } else {
+    opponentTime.value = formatMilliseconds(gameUpdate.remainingTimeInMilliseconds)
   }
 
   boardApi?.move(gameUpdate.san)
+  isPlayersTurn.value = true
 })
 
 const gameResult = ref<string | null>(null)
@@ -58,14 +69,28 @@ const goBackClicked = () => {
 </script>
 
 <template>
-  Game {{ gameId }}
+  <section class="h-[90svh] flex flex-col justify-between content-between">
+    <UCard id="opponentCard" class="my-2 mx-auto w-full max-w-full landscape:max-w-[700px]">
+      <div class="flex flex-row justify-between">
+        <span>{{ game.opponent }}</span>
+        <ChessTimer :run="!isPlayersTurn" :duration="game.timeInMilliseconds" />
+      </div>
+    </UCard>
 
-  <TheChessboard
-    :player-color="playerColor"
-    :board-config="boardConfig"
-    @move="onMove"
-    @board-created="(api) => (boardApi = api)"
-  />
+    <TheChessboard
+      :player-color="playerColor"
+      :board-config="boardConfig"
+      @move="onMove"
+      @board-created="(api) => (boardApi = api)"
+    />
+
+    <UCard id="playerCard" class="my-2 mx-auto w-full max-w-full landscape:max-w-[700px]">
+      <div class="flex justify-between">
+        <span>{{ userStore.user?.userName }}</span>
+        <ChessTimer :run="isPlayersTurn" :duration="game.timeInMilliseconds" />
+      </div>
+    </UCard>
+  </section>
 
   <p v-if="gameResult">{{ gameResult }} <button @click="goBackClicked">go back</button></p>
 </template>

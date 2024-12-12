@@ -8,7 +8,8 @@ export type PendingGame = {
 
 export type Game = {
   color: string
-  opponent: string
+  opponent: string,
+  timeInMilliseconds: number
 }
 
 export type GameEnding =

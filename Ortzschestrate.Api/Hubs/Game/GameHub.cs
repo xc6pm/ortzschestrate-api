@@ -11,12 +11,20 @@ public partial class GameHub
         var game = _games[gameId];
         if (game.Player1ConnectionId == Context.ConnectionId)
         {
-            return new { Color = game.Player1Color.AsChar, Opponent = game.Player2.Name };
+            return new
+            {
+                Color = game.Player1Color.AsChar, Opponent = game.Player2.Name,
+                TimeInMilliseconds = game.GameType.GetTimeSpan().TotalMilliseconds
+            };
         }
 
         if (game.Player2ConnectionId == Context.ConnectionId)
         {
-            return new { Color = game.Player2Color.AsChar, Opponent = game.Player1.Name };
+            return new
+            {
+                Color = game.Player2Color.AsChar, Opponent = game.Player1.Name,
+                TimeInMilliseconds = game.GameType.GetTimeSpan().TotalMilliseconds
+            };
         }
 
         throw new HubException("Couldn't find that game.");
@@ -33,7 +41,7 @@ public partial class GameHub
 
         bool success;
         TimeSpan remainingTime;
-        
+
         try
         {
             success = game.Move(Context.User!.FindId(), move, out remainingTime);
