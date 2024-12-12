@@ -6,6 +6,6 @@ public interface IGameClient
 {
     Task LobbyUpdated(List<PendingGame> pendingGames);
     Task GameStarted(string gameId);
-    Task PlayerMoved(string move);
+    Task PlayerMoved(GameUpdate gameUpdate);
     Task GameEnded(GameResult gameResult);    
 }

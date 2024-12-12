@@ -32,9 +32,11 @@ public partial class GameHub
             throw new HubException($"A game with id {gameId} doesn't exist.");
 
         bool success;
+        TimeSpan remainingTime;
+        
         try
         {
-            success = game.Move(Context.User!.FindId(), move);
+            success = game.Move(Context.User!.FindId(), move, out remainingTime);
         }
         catch (ArgumentException e)
         {
@@ -44,7 +46,7 @@ public partial class GameHub
         if (!success)
             throw new HubException("Couldn't make that move.");
 
-        await Clients.Group($"game_{gameId}").PlayerMoved(move);
+        await Clients.Group($"game_{gameId}").PlayerMoved(new(move, remainingTime.TotalMilliseconds));
 
         if (game.EndGame != null)
         {

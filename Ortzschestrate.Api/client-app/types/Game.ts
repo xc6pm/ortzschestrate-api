@@ -25,3 +25,8 @@ export type GameResult = {
   result: GameEnding
   wonSide?: "w" | "b"
 }
+
+export type GameUpdate = {
+  san: string
+  remainingTimeInMilliseconds: number
+}

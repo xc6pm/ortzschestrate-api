@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { BoardApi, TheChessboard, type BoardConfig } from "vue3-chessboard"
 import "vue3-chessboard/style.css"
-import type { Game, GameResult } from "~/types/Game"
+import type { Game, GameResult, GameUpdate } from "~/types/Game"
 
 const route = useRoute()
 const gameId = route.params.id
@@ -21,13 +21,13 @@ const boardConfig: BoardConfig = {
 
 let boardApi: BoardApi | undefined
 
-connection.on("PlayerMoved", (move) => {
-  console.log("new move", move)
-  if (boardApi?.getLastMove() === move) {
+connection.on("PlayerMoved", (gameUpdate: GameUpdate) => {
+  console.log("new move", gameUpdate)
+  if (boardApi?.getLastMove()?.san === gameUpdate.san) {
     return
   }
 
-  boardApi?.move(move)
+  boardApi?.move(gameUpdate.san)
 })
 
 const gameResult = ref<string | null>(null)

@@ -12,4 +12,14 @@ public class GameType : SmartEnum<GameType>
     private GameType(string name, int value) : base(name, value)
     {
     }
+
+    public TimeSpan GetTimeSpan()
+    {
+        if (Name == nameof(Untimed))
+        {
+            return TimeSpan.Zero;
+        }
+        
+        return TimeSpan.FromMinutes(Value);
+    }
 }
