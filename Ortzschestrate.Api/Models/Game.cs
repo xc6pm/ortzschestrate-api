@@ -79,4 +79,35 @@ public class Game
             throw new HubException("Invalid move!");
         }
     }
+
+    public bool IsPlayer1OutOfTime()
+    {
+        if (Player1RemainingTime <= TimeSpan.Zero)
+            return true;
+        
+        bool isItPlayer1Turn = Player1Color == _board.Turn;
+        if (!isItPlayer1Turn)
+            return false;
+        
+        var res = DateTime.UtcNow - _lastMoveTime > Player1RemainingTime;
+        if (res)
+            _board.Resign(Player1Color);
+        return res;
+    }
+    
+    public bool IsPlayer2OutOfTime()
+    {
+        if (Player2RemainingTime <= TimeSpan.Zero)
+            return true;
+        
+        bool isItPlayer2Turn = Player1Color == _board.Turn;
+        if (!isItPlayer2Turn)
+            return false;
+        
+        
+        var res = DateTime.UtcNow - _lastMoveTime > Player2RemainingTime;
+        if (res)
+            _board.Resign(Player2Color);
+        return res;
+    }
 }

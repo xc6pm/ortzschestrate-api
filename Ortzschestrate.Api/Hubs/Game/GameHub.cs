@@ -62,4 +62,26 @@ public partial class GameHub
                 .GameEnded(new(game.EndGame.EndgameType.ToString(), game.EndGame.WonSide?.AsChar));
         }
     }
+
+    [HubMethodName("timeout")]
+    public async Task<bool> ReportTimeoutAsync(string gameId)
+    {
+        var game = _games[gameId];
+
+        if (game.IsPlayer1OutOfTime())
+        {
+            await Clients.Group($"game_{gameId}")
+                .GameEnded(new(game.EndGame!.EndgameType.ToString(), game.EndGame.WonSide!.AsChar));
+            return true;
+        }
+
+        if (game.IsPlayer2OutOfTime())
+        {
+            await Clients.Group($"game_{gameId}")
+                .GameEnded(new(game.EndGame!.EndgameType.ToString(), game.EndGame.WonSide!.AsChar));
+            return true;
+        }
+
+        return false;
+    }
 }

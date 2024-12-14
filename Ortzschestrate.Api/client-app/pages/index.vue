@@ -47,7 +47,7 @@ connection.on("GameStarted", (gameId) => {
 })
 
 const createGame = async () => {
-  await connection.invoke("create", "Blitz", "White")
+  await connection.invoke("create", 10000, "w")
   console.log("create invoked")
 }
 

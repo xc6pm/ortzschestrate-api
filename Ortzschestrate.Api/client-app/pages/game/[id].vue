@@ -22,19 +22,19 @@ const boardConfig: BoardConfig = {
 
 let boardApi: BoardApi | undefined
 
-const opponentTime = ref(formatMilliseconds(game.timeInMilliseconds))
-const playerTime = ref(formatMilliseconds(game.timeInMilliseconds))
 const isPlayersTurn = ref(playerColor === "white")
+const opponentTimer = useTemplateRef("opponentTimer")
+const playerTimer = useTemplateRef("playerTimer")
 
 connection.on("PlayerMoved", (gameUpdate: GameUpdate) => {
   console.log("new move", gameUpdate)
 
   if (boardApi?.getLastMove()?.san === gameUpdate.san) {
-    playerTime.value = formatMilliseconds(gameUpdate.remainingTimeInMilliseconds)
+    playerTimer.value?.syncWithServer(gameUpdate.remainingTimeInMilliseconds)
     isPlayersTurn.value = false
     return
   } else {
-    opponentTime.value = formatMilliseconds(gameUpdate.remainingTimeInMilliseconds)
+    opponentTimer.value?.syncWithServer(gameUpdate.remainingTimeInMilliseconds)
   }
 
   boardApi?.move(gameUpdate.san)
@@ -53,7 +53,7 @@ connection.on("GameEnded", (res: GameResult) => {
   }
 })
 
-const onMove = async (move) => {
+const onMove = async (move: any) => {
   console.log("onMove", move)
 
   // move came from server.
@@ -61,6 +61,22 @@ const onMove = async (move) => {
 
   await connection.invoke("move", gameId, move.san)
   console.log("move invoked")
+}
+
+const playerTimedOut = () => {
+  console.log("timed out ")
+  // This actually stops as soon as the game times out.
+  // Invoking timeout only once is not effective because we may do it a
+  // fraction of a second earlier than the server sees the timeout.
+  const intervalId = setInterval(async () => {
+    try {
+      if (await connection.invoke("timeout", gameId)) {
+        clearInterval(intervalId)
+      }
+    } catch {
+      clearInterval(intervalId)
+    }
+  }, 1000)
 }
 
 const goBackClicked = () => {
@@ -73,7 +89,12 @@ const goBackClicked = () => {
     <UCard id="opponentCard" class="my-2 mx-auto w-full max-w-full landscape:max-w-[700px]">
       <div class="flex flex-row justify-between">
         <span>{{ game.opponent }}</span>
-        <ChessTimer :run="!isPlayersTurn" :duration="game.timeInMilliseconds" />
+        <ChessTimer
+          :run="!isPlayersTurn"
+          :duration="game.timeInMilliseconds"
+          ref="opponentTimer"
+          @timeout="playerTimedOut"
+        />
       </div>
     </UCard>
 
@@ -87,7 +108,12 @@ const goBackClicked = () => {
     <UCard id="playerCard" class="my-2 mx-auto w-full max-w-full landscape:max-w-[700px]">
       <div class="flex justify-between">
         <span>{{ userStore.user?.userName }}</span>
-        <ChessTimer :run="isPlayersTurn" :duration="game.timeInMilliseconds" />
+        <ChessTimer
+          :run="isPlayersTurn"
+          :duration="game.timeInMilliseconds"
+          ref="playerTimer"
+          @timeout="playerTimedOut"
+        />
       </div>
     </UCard>
   </section>

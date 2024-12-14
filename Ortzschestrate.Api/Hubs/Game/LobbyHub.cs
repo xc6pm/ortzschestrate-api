@@ -7,13 +7,17 @@ namespace Ortzschestrate.Api.Hubs;
 public partial class GameHub
 {
     [HubMethodName("create")]
-    public async Task CreateGameAsync(string gameType, string creatorColor)
+    public async Task CreateGameAsync(int time, char creatorColor)
     {
-        if (!GameType.TryFromName(gameType, out GameType timeLimit))
+        if (!GameType.TryFromValue(time, out GameType timeLimit))
             throw new HubException("The gameType argument is invalid.");
 
-        if (!PieceColor.TryFromName(creatorColor, out PieceColor color))
-            throw new HubException("The creatorColor argument is invalid.");
+        var color = creatorColor switch
+        {
+            'w' => PieceColor.White,
+            'b' => PieceColor.Black,
+            _ => throw new HubException("The creatorColor argument is invalid.")
+        };
 
         await _lobbySemaphore.WaitAsync();
         try
@@ -118,7 +122,7 @@ public partial class GameHub
             // Want to execute these tasks outside the semaphore and before the return.
             if (startingGame != null)
             {
-                await Groups.AddToGroupAsync(creatorConnectionId, $"game_{startingGame.Id}");                
+                await Groups.AddToGroupAsync(creatorConnectionId, $"game_{startingGame.Id}");
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"game_{startingGame.Id}");
                 await Clients.All.LobbyUpdated(_pendingGamesByCreatorConnectionId.Values.ToList());
                 await Clients.User(startingGame.Player1.UserId)
