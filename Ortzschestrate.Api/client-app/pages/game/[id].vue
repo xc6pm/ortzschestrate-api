@@ -41,16 +41,19 @@ connection.on("PlayerMoved", (gameUpdate: GameUpdate) => {
   isPlayersTurn.value = true
 })
 
-const gameResult = ref<string | null>(null)
+const resultModal = reactive({ isOpen: false, playerPOVResult: "", reason: "" })
 
 connection.on("GameEnded", (res: GameResult) => {
   console.log("game ended", res)
   if (res.wonSide) {
-    gameResult.value =
-      (res.wonSide === "w" ? "White" : "Black") + " won by " + (res.result === "Resigned" ? "resignation" : res.result)
+    const playerWon = res.wonSide === game.color
+    resultModal.playerPOVResult = `You ${playerWon ? "won" : "lost"}`
+    resultModal.reason = `by ${res.result === "Resigned" ? "resignation" : res.result}`
   } else {
-    gameResult.value = "Draw by " + res.result
+    resultModal.playerPOVResult = "Draw"
+    resultModal.reason = `by ${res.result}`
   }
+  resultModal.isOpen = true
 })
 
 const onMove = async (move: any) => {
@@ -77,10 +80,6 @@ const playerTimedOut = () => {
       clearInterval(intervalId)
     }
   }, 1000)
-}
-
-const goBackClicked = () => {
-  navigateTo("/")
 }
 </script>
 
@@ -118,5 +117,14 @@ const goBackClicked = () => {
     </UCard>
   </section>
 
-  <p v-if="gameResult">{{ gameResult }} <button @click="goBackClicked">go back</button></p>
+  <UModal v-model="resultModal.isOpen">
+    <UCard>
+      <h1 class="text-4xl text-center">{{ resultModal.playerPOVResult }}</h1>
+      <h4 class="text-sm text-slate-200 text-center">{{ resultModal.reason }}</h4>
+      
+
+      <UButton to="/" block size="lg" class="m-3 ml-0">Back to lobby</UButton>
+      <UButton @click="() => resultModal.isOpen = false" block size="lg" class="m-3 mb-0 ml-0">See what happened</UButton>
+    </UCard>
+  </UModal>
 </template>
