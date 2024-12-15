@@ -12,6 +12,12 @@ const connection = await connectionStore.resolveConnection()
 
 const game: Game = await connection.invoke("getGame", gameId)
 console.log("got game", game)
+if (!game) {
+  const toast = useToast()
+  toast.add({ description: "Couldn't find that game!", color: "red" })
+  navigateTo("/")
+}
+
 const playerColor = game.color === "w" ? "white" : "black"
 console.log("playerColor", playerColor)
 const boardConfig: BoardConfig = {
@@ -121,10 +127,11 @@ const playerTimedOut = () => {
     <UCard>
       <h1 class="text-4xl text-center">{{ resultModal.playerPOVResult }}</h1>
       <h4 class="text-sm text-slate-200 text-center">{{ resultModal.reason }}</h4>
-      
 
       <UButton to="/" block size="lg" class="m-3 ml-0">Back to lobby</UButton>
-      <UButton @click="() => resultModal.isOpen = false" block size="lg" class="m-3 mb-0 ml-0">See what happened</UButton>
+      <UButton @click="() => (resultModal.isOpen = false)" block size="lg" class="m-3 mb-0 ml-0"
+        >See what happened</UButton
+      >
     </UCard>
   </UModal>
 </template>

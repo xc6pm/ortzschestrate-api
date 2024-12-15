@@ -6,9 +6,13 @@ namespace Ortzschestrate.Api.Hubs;
 public partial class GameHub
 {
     [HubMethodName("getGame")]
-    public object GetOngoingGame(string gameId)
+    public object? GetOngoingGame(string gameId)
     {
-        var game = _games[gameId];
+        if (!_games.TryGetValue(gameId, out var game))
+        {
+            return null;
+        }
+        
         if (game.Player1ConnectionId == Context.ConnectionId)
         {
             return new
@@ -27,7 +31,7 @@ public partial class GameHub
             };
         }
 
-        throw new HubException("Couldn't find that game.");
+        return null;
     }
 
     [HubMethodName("move")]
