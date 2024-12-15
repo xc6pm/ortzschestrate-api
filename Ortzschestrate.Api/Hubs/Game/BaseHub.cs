@@ -11,7 +11,7 @@ namespace Ortzschestrate.Api.Hubs;
 public partial class GameHub : Hub<IGameClient>
 {
     private static readonly ConcurrentDictionary<string, PendingGame> _pendingGamesByCreatorConnectionId = new();
-    private static readonly ConcurrentDictionary<string, Models.Game> _games = new();
+    private static readonly ConcurrentDictionary<string, Models.Game> _ongoingGames = new();
     private static readonly SemaphoreSlim _lobbySemaphore = new(1, 1);
     private readonly PlayerCache _playerCache;
 

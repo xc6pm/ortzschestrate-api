@@ -30,7 +30,8 @@ const connectionStore = useConnectionStore()
 
 const connection = await connectionStore.resolveConnection()
 
-const pendingGames = ref<PendingGame[]>([])
+const pendingGamesFromServer: PendingGame[] = await connection.invoke("getPending")
+const pendingGames = ref<PendingGame[]>(pendingGamesFromServer)
 
 connection.on("NewGameCreated", (creator) => {
   console.log("new game created by ", creator)

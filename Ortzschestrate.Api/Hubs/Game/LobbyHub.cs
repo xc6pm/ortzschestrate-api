@@ -39,6 +39,12 @@ public partial class GameHub
         await Clients.All.LobbyUpdated(_pendingGamesByCreatorConnectionId.Values.ToList());
     }
 
+    [HubMethodName("getPending")]
+    public List<PendingGame> GetAllPendingGamesAsync()
+    {
+        return _pendingGamesByCreatorConnectionId.Values.ToList();
+    }
+
     [HubMethodName("cancel")]
     public async Task CancelPendingGameAsync(string creatorConnectionId)
     {
@@ -108,7 +114,7 @@ public partial class GameHub
                 startingGame = new Models.Game(pendingGame, player2, Context.ConnectionId);
                 player1.OngoingGamesByConnectionId[creatorConnectionId] = startingGame;
                 player2.OngoingGamesByConnectionId[Context.ConnectionId] = startingGame;
-                _games[startingGame.Id] = startingGame;
+                _ongoingGames[startingGame.Id] = startingGame;
                 return startingGame.Id;
             }
             else // Player1 already started another game.

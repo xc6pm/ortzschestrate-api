@@ -65,10 +65,10 @@ const tryLogin = async (event: FormSubmitEvent<any>) => {
 <template>
   <UForm @submit="tryLogin" class="px-3 pt-3" :state="state">
     <UFormGroup label="Email or username:" name="emailOrUsername" class="mb-3">
-      <UInput v-model="state.emailOrUsername" type="text" required autofocus />
+      <UInput v-model="state.emailOrUsername" type="text" required autofocus :disabled="tryingLogin"/>
     </UFormGroup>
     <UFormGroup label="Password:" name="password" class="mb-5">
-      <UInput v-model="state.password" type="password" required />
+      <UInput v-model="state.password" type="password" required :disabled="tryingLogin"/>
     </UFormGroup>
 
     <UButton type="submit" block class="mb-3" :loading="tryingLogin" size="lg">Login</UButton>

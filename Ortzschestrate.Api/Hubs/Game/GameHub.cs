@@ -8,11 +8,11 @@ public partial class GameHub
     [HubMethodName("getGame")]
     public object? GetOngoingGame(string gameId)
     {
-        if (!_games.TryGetValue(gameId, out var game))
+        if (!_ongoingGames.TryGetValue(gameId, out var game))
         {
             return null;
         }
-        
+
         if (game.Player1ConnectionId == Context.ConnectionId)
         {
             return new
@@ -40,7 +40,7 @@ public partial class GameHub
         if (string.IsNullOrWhiteSpace(gameId) || string.IsNullOrWhiteSpace(move))
             throw new HubException("GameId and move must be given.");
 
-        if (!_games.TryGetValue(gameId, out var game))
+        if (!_ongoingGames.TryGetValue(gameId, out var game))
             throw new HubException($"A game with id {gameId} doesn't exist.");
 
         bool success;
@@ -62,30 +62,36 @@ public partial class GameHub
 
         if (game.EndGame != null)
         {
-            await Clients.Group($"game_{gameId}")
-                .GameEnded(new(game.EndGame.EndgameType.ToString(), game.EndGame.WonSide?.AsChar));
+            await declareGameEndedAsync(game);
         }
     }
 
     [HubMethodName("timeout")]
     public async Task<bool> ReportTimeoutAsync(string gameId)
     {
-        var game = _games[gameId];
+        var game = _ongoingGames[gameId];
 
         if (game.IsPlayer1OutOfTime())
         {
-            await Clients.Group($"game_{gameId}")
-                .GameEnded(new(game.EndGame!.EndgameType.ToString(), game.EndGame.WonSide!.AsChar));
+            await declareGameEndedAsync(game);
             return true;
         }
 
         if (game.IsPlayer2OutOfTime())
         {
-            await Clients.Group($"game_{gameId}")
-                .GameEnded(new(game.EndGame!.EndgameType.ToString(), game.EndGame.WonSide!.AsChar));
+            await declareGameEndedAsync(game);
             return true;
         }
 
         return false;
+    }
+
+    private async Task declareGameEndedAsync(Models.Game game)
+    {
+        await Clients.Group($"game_{game.Id}")
+            .GameEnded(new(game.EndGame!.EndgameType.ToString(), game.EndGame.WonSide?.AsChar));
+        game.Player1.OngoingGamesByConnectionId.TryRemove(game.Player1ConnectionId, out _);
+        game.Player2.OngoingGamesByConnectionId.TryRemove(game.Player2ConnectionId, out _);
+        _ongoingGames.TryRemove($"game_{game.Id}", out _);
     }
 }
