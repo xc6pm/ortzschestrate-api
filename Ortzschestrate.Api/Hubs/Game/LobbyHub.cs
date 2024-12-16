@@ -56,7 +56,7 @@ public partial class GameHub
             if (_pendingGamesByCreatorConnectionId.TryGetValue(creatorConnectionId, out PendingGame? pendingGame) &&
                 pendingGame.Creator.UserId == player.UserId)
             {
-                _pendingGamesByCreatorConnectionId.TryRemove(Context.ConnectionId, out _);
+                _pendingGamesByCreatorConnectionId.TryRemove(creatorConnectionId, out _);
             }
             else
             {

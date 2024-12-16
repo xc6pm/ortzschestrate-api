@@ -5,7 +5,7 @@ import UserButton from "~/components/auth/UserButton.vue"
 <template>
   <header class="bg-gray-800 text-white py-4 shadow-md">
     <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
-      <div class="text-3xl font-bold text-green-400">ortzschestrate</div>
+      <NuxtLink to="/"><span class="text-3xl font-bold text-green-400">ortzschestrate</span></NuxtLink>
 
       <div class="relative">
         <UserButton />
@@ -13,7 +13,7 @@ import UserButton from "~/components/auth/UserButton.vue"
     </div>
   </header>
 
-  <UContainer :ui="{padding: 'px-4', strategy: 'override'}">
+  <UContainer :ui="{ padding: 'px-4', strategy: 'override' }">
     <slot />
   </UContainer>
 

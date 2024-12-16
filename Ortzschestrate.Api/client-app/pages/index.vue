@@ -28,38 +28,36 @@ const pendingGameFields = [
 
 const connectionStore = useConnectionStore()
 
-const connection = await connectionStore.resolveConnection()
-
-const pendingGamesFromServer: PendingGame[] = await connection.invoke("getPending")
+const pendingGamesFromServer: PendingGame[] = await connectionStore.invoke("getPending")
 const pendingGames = ref<PendingGame[]>(pendingGamesFromServer)
 
-connection.on("NewGameCreated", (creator) => {
+useConnectionEvent("NewGameCreated", (creator) => {
   console.log("new game created by ", creator)
 })
 
-connection.on("LobbyUpdated", (updatedPendingGames: PendingGame[]) => {
+useConnectionEvent("LobbyUpdated", (updatedPendingGames: PendingGame[]) => {
   console.log("Pending games ", updatedPendingGames)
   pendingGames.value = updatedPendingGames
 })
 
-connection.on("GameStarted", (gameId) => {
+useConnectionEvent("GameStarted", (gameId) => {
   console.log("Game started", gameId)
   navigateTo("/game/" + gameId)
 })
 
 const createGame = async () => {
-  await connection.invoke("create", 10000, "w")
+  await connectionStore.invoke("create", 3, "w")
   console.log("create invoked")
 }
 
 const joinGame = async (opponentUserId: string, opponentConnectionId: string) => {
-  const gameId = await connection.invoke("join", opponentUserId, opponentConnectionId)
+  const gameId = await connectionStore.invoke("join", opponentUserId, opponentConnectionId)
   console.log("join invoked", gameId)
   navigateTo("/game/" + gameId)
 }
 
 const cancelGame = async (creatorConnectionId: string) => {
-  await connection.invoke("cancel", creatorConnectionId)
+  await connectionStore.invoke("cancel", creatorConnectionId)
   console.log("cancel invoked")
 }
 </script>

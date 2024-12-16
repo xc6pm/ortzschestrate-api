@@ -15,6 +15,7 @@ const toast = useToast()
 
 const userStore = useUserStore()
 
+const tryingRegister = ref(false)
 const tryRegister = async (event: FormSubmitEvent<any>) => {
   event.preventDefault()
 
@@ -23,6 +24,7 @@ const tryRegister = async (event: FormSubmitEvent<any>) => {
     return
   }
 
+  tryingRegister.value = true
   try {
     const res = await $fetch.raw(registerUrl, {
       method: "POST",
@@ -48,6 +50,8 @@ const tryRegister = async (event: FormSubmitEvent<any>) => {
   } catch (ex) {
     console.log("register exception:", ex)
     toast.add({ description: "Registration failed!", color: "red", icon: "i-heroicons-x-circle" })
+  } finally {
+    tryingRegister.value = false
   }
 }
 </script>
@@ -55,19 +59,19 @@ const tryRegister = async (event: FormSubmitEvent<any>) => {
 <template>
   <UForm @submit="tryRegister" :state="state" class="px-3 pt-3">
     <UFormGroup label="Email:" name="email" class="mb-3">
-      <UInput type="email" autofocus v-model="state.email" required />
+      <UInput type="email" autofocus v-model="state.email" required :disabled="tryingRegister" />
     </UFormGroup>
     <UFormGroup label="Username:" name="username" class="mb-3">
-      <UInput type="text" v-model="state.username" required />
+      <UInput type="text" v-model="state.username" required :disabled="tryingRegister" />
     </UFormGroup>
     <UFormGroup label="Password:" name="password" class="mb-3">
-      <UInput type="text" v-model="state.password" required />
+      <UInput type="text" v-model="state.password" required :disabled="tryingRegister" />
     </UFormGroup>
     <UFormGroup label="Confirm Password:" name="confirmPassword" class="mb-5">
-      <UInput type="text" v-model="state.confirmedPassword" required />
+      <UInput type="text" v-model="state.confirmedPassword" required :disabled="tryingRegister" />
     </UFormGroup>
 
-    <UButton type="submit" block size="lg">Register</UButton>
+    <UButton type="submit" block size="lg" :loading="tryingRegister">Register</UButton>
   </UForm>
 </template>
 

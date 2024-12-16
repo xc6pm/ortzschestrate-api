@@ -8,9 +8,8 @@ const gameId = route.params.id
 
 const userStore = useUserStore()
 const connectionStore = useConnectionStore()
-const connection = await connectionStore.resolveConnection()
 
-const game: Game = await connection.invoke("getGame", gameId)
+const game: Game = await connectionStore.invoke("getGame", gameId)
 console.log("got game", game)
 if (!game) {
   const toast = useToast()
@@ -32,7 +31,7 @@ const isPlayersTurn = ref(playerColor === "white")
 const opponentTimer = useTemplateRef("opponentTimer")
 const playerTimer = useTemplateRef("playerTimer")
 
-connection.on("PlayerMoved", (gameUpdate: GameUpdate) => {
+useConnectionEvent("PlayerMoved", (gameUpdate: GameUpdate) => {
   console.log("new move", gameUpdate)
 
   if (boardApi?.getLastMove()?.san === gameUpdate.san) {
@@ -49,7 +48,7 @@ connection.on("PlayerMoved", (gameUpdate: GameUpdate) => {
 
 const resultModal = reactive({ isOpen: false, playerPOVResult: "", reason: "" })
 
-connection.on("GameEnded", (res: GameResult) => {
+useConnectionEvent("GameEnded", (res: GameResult) => {
   console.log("game ended", res)
   if (res.wonSide) {
     const playerWon = res.wonSide === game.color
@@ -68,7 +67,7 @@ const onMove = async (move: any) => {
   // move came from server.
   if (move.color !== game.color) return
 
-  await connection.invoke("move", gameId, move.san)
+  await connectionStore.invoke("move", gameId, move.san)
   console.log("move invoked")
 }
 
@@ -79,7 +78,7 @@ const playerTimedOut = () => {
   // fraction of a second earlier than the server sees the timeout.
   const intervalId = setInterval(async () => {
     try {
-      if (await connection.invoke("timeout", gameId)) {
+      if (await connectionStore.invoke("timeout", gameId)) {
         clearInterval(intervalId)
       }
     } catch {

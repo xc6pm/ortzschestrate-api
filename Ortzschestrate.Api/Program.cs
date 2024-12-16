@@ -20,7 +20,7 @@ builder.Services.AddDbContext<DbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-string validUsernameChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+const string validUsernameChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
 
 builder.Services.AddAuthentication(options =>
     {
@@ -136,7 +136,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddIdentityCore<User>(options =>
     {
         options.User.RequireUniqueEmail = true;
-        options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+        options.User.AllowedUserNameCharacters = validUsernameChars;
     })
     .AddEntityFrameworkStores<DbContext>()
     .AddDefaultTokenProviders();
