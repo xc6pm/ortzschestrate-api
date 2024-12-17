@@ -8,9 +8,7 @@ public class Player(string userId, string name)
     public string UserId { get; } = userId;
     public string Name { get; } = name;
 
-    /// <summary>
-    /// Ongoing games by the connectionId of this player (not the creator).
-    /// </summary>
+    // I may add long games (like 3 days) too, but for now the player should be able to play one short game at a time. 
     [JsonIgnore]
-    public ConcurrentDictionary<string, Game> OngoingGamesByConnectionId { get; } = new();
+    public Game? OngoingShortGame { get; set; }
 }

@@ -20,10 +20,10 @@ public class PlayerCache
     private readonly ConcurrentDictionary<string, Player> _playersById = new();
     private readonly ConcurrentDictionary<string, List<string>> _playerConnections = new();
 
-    public Player GetPlayer(string playerId)
-    {
-        return _playersById[playerId];
-    }
+    public Player GetPlayer(string playerId) => _playersById[playerId];
+
+    public int GetRemainingConnections(string playerId) =>
+        _playerConnections.TryGetValue(playerId, out var connections) ? connections.Count : 0;
 
     public async Task OnNewConnectionAsync(HubCallerContext context)
     {

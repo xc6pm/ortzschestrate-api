@@ -8,26 +8,22 @@ public class Game
     private readonly ChessBoard _board = new();
     private DateTime _lastMoveTime;
 
-    public Game(PendingGame pendingGame, Player player2, string player2ConnectionId)
+    public Game(PendingGame pendingGame, Player player2)
     {
         Player1 = pendingGame.Creator;
         Player2 = player2;
-        Player1ConnectionId = pendingGame.CreatorConnectionId;
-        Player2ConnectionId = player2ConnectionId;
         Player1Color = pendingGame.CreatorColor;
         Player2Color = Player1Color == PieceColor.White ? PieceColor.Black : PieceColor.White;
         GameType = pendingGame.GameType;
-        Id = Player1ConnectionId + Player2ConnectionId;
+        Id = Guid.NewGuid();
         StartedTime = _lastMoveTime = DateTime.UtcNow;
         Player1RemainingTime = Player2RemainingTime = pendingGame.GameType.GetTimeSpan();
     }
 
-    public string Id { get; }
+    public Guid Id { get; }
 
     public Player Player1 { get; }
     public Player Player2 { get; }
-    public string Player1ConnectionId { get; }
-    public string Player2ConnectionId { get; }
     public PieceColor Player1Color { get; }
     public PieceColor Player2Color { get; }
     public GameType GameType { get; }
@@ -84,27 +80,27 @@ public class Game
     {
         if (Player1RemainingTime <= TimeSpan.Zero)
             return true;
-        
+
         bool isItPlayer1Turn = Player1Color == _board.Turn;
         if (!isItPlayer1Turn)
             return false;
-        
+
         var res = DateTime.UtcNow - _lastMoveTime > Player1RemainingTime;
         if (res)
             _board.Resign(Player1Color);
         return res;
     }
-    
+
     public bool IsPlayer2OutOfTime()
     {
         if (Player2RemainingTime <= TimeSpan.Zero)
             return true;
-        
+
         bool isItPlayer2Turn = Player1Color == _board.Turn;
         if (!isItPlayer2Turn)
             return false;
-        
-        
+
+
         var res = DateTime.UtcNow - _lastMoveTime > Player2RemainingTime;
         if (res)
             _board.Resign(Player2Color);

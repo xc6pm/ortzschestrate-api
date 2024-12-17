@@ -23,6 +23,7 @@ const boardConfig: BoardConfig = {
   orientation: playerColor,
   premovable: { enabled: false },
   predroppable: { enabled: false },
+  viewOnly: false,
 }
 
 let boardApi: BoardApi | undefined
@@ -50,6 +51,7 @@ const resultModal = reactive({ isOpen: false, playerPOVResult: "", reason: "" })
 
 useConnectionEvent("GameEnded", (res: GameResult) => {
   console.log("game ended", res)
+  boardConfig.viewOnly = true
   if (res.wonSide) {
     const playerWon = res.wonSide === game.color
     resultModal.playerPOVResult = `You ${playerWon ? "won" : "lost"}`
@@ -107,6 +109,7 @@ const playerTimedOut = () => {
       :board-config="boardConfig"
       @move="onMove"
       @board-created="(api) => (boardApi = api)"
+      :reactive-config="true"
     />
 
     <UCard id="playerCard" class="my-2 mx-auto w-full max-w-full landscape:max-w-[700px]">

@@ -10,8 +10,8 @@ namespace Ortzschestrate.Api.Hubs;
 [Authorize]
 public partial class GameHub : Hub<IGameClient>
 {
-    private static readonly ConcurrentDictionary<string, PendingGame> _pendingGamesByCreatorConnectionId = new();
-    private static readonly ConcurrentDictionary<string, Models.Game> _ongoingGames = new();
+    private static readonly ConcurrentDictionary<string, PendingGame> _pendingGamesByCreatorId = new();
+    private static readonly ConcurrentDictionary<Guid, Models.Game> _ongoingShortGames = new();
     private static readonly SemaphoreSlim _lobbySemaphore = new(1, 1);
     private readonly PlayerCache _playerCache;
 
@@ -26,7 +26,7 @@ public partial class GameHub : Hub<IGameClient>
         await _playerCache.OnNewConnectionAsync(Context);
         Debug.WriteLine($"New client connected");
         // To send the pending games to the newly joined client.
-        await Clients.Caller.LobbyUpdated(_pendingGamesByCreatorConnectionId.Values.ToList());
+        await Clients.Caller.LobbyUpdated(_pendingGamesByCreatorId.Values.ToList());
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -38,13 +38,13 @@ public partial class GameHub : Hub<IGameClient>
         {
             var player = _playerCache.GetPlayer(Context.UserIdentifier!);
 
-            if (player.OngoingGamesByConnectionId.TryGetValue(Context.ConnectionId, out var game))
+            if (player.OngoingShortGame != null)
             {
                 // Finish the game, if more than 10 moves were made the abandoning player must lose.
             }
-            else
+            else if (_playerCache.GetRemainingConnections(Context.UserIdentifier!) == 1) // Last connection's closing.
             {
-                _pendingGamesByCreatorConnectionId.TryRemove(Context.ConnectionId, out _);
+                _pendingGamesByCreatorId.TryRemove(Context.UserIdentifier!, out _);
                 lobbyUpdated = true;
             }
         }
@@ -53,7 +53,7 @@ public partial class GameHub : Hub<IGameClient>
             _lobbySemaphore.Release();
             _playerCache.OnDisconnect(Context);
             if (lobbyUpdated)
-                await Clients.All.LobbyUpdated(_pendingGamesByCreatorConnectionId.Values.ToList());
+                await Clients.All.LobbyUpdated(_pendingGamesByCreatorId.Values.ToList());
         }
 
         Debug.WriteLine("Connection closed");

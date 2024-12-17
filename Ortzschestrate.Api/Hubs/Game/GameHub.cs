@@ -1,19 +1,18 @@
 using Microsoft.AspNetCore.SignalR;
-using Ortzschestrate.Api.Security;
 
 namespace Ortzschestrate.Api.Hubs;
 
 public partial class GameHub
 {
     [HubMethodName("getGame")]
-    public object? GetOngoingGame(string gameId)
+    public object? GetOngoingGame(Guid gameId)
     {
-        if (!_ongoingGames.TryGetValue(gameId, out var game))
+        if (!_ongoingShortGames.TryGetValue(gameId, out var game))
         {
             return null;
         }
 
-        if (game.Player1ConnectionId == Context.ConnectionId)
+        if (game.Player1.UserId == Context.UserIdentifier!)
         {
             return new
             {
@@ -22,7 +21,7 @@ public partial class GameHub
             };
         }
 
-        if (game.Player2ConnectionId == Context.ConnectionId)
+        if (game.Player2.UserId == Context.UserIdentifier!)
         {
             return new
             {
@@ -35,12 +34,12 @@ public partial class GameHub
     }
 
     [HubMethodName("move")]
-    public async Task MoveAsync(string gameId, string move)
+    public async Task MoveAsync(Guid gameId, string move)
     {
-        if (string.IsNullOrWhiteSpace(gameId) || string.IsNullOrWhiteSpace(move))
+        if (gameId == Guid.Empty || string.IsNullOrWhiteSpace(move))
             throw new HubException("GameId and move must be given.");
 
-        if (!_ongoingGames.TryGetValue(gameId, out var game))
+        if (!_ongoingShortGames.TryGetValue(gameId, out var game))
             throw new HubException($"A game with id {gameId} doesn't exist.");
 
         bool success;
@@ -48,7 +47,7 @@ public partial class GameHub
 
         try
         {
-            success = game.Move(Context.User!.FindId(), move, out remainingTime);
+            success = game.Move(Context.UserIdentifier!, move, out remainingTime);
         }
         catch (ArgumentException e)
         {
@@ -58,7 +57,8 @@ public partial class GameHub
         if (!success)
             throw new HubException("Couldn't make that move.");
 
-        await Clients.Group($"game_{gameId}").PlayerMoved(new(move, remainingTime.TotalMilliseconds));
+        await Clients.Users([game.Player1.UserId, game.Player2.UserId])
+            .PlayerMoved(new(move, remainingTime.TotalMilliseconds));
 
         if (game.EndGame != null)
         {
@@ -67,9 +67,9 @@ public partial class GameHub
     }
 
     [HubMethodName("timeout")]
-    public async Task<bool> ReportTimeoutAsync(string gameId)
+    public async Task<bool> ReportTimeoutAsync(Guid gameId)
     {
-        var game = _ongoingGames[gameId];
+        var game = _ongoingShortGames[gameId];
 
         if (game.IsPlayer1OutOfTime())
         {
@@ -88,10 +88,10 @@ public partial class GameHub
 
     private async Task declareGameEndedAsync(Models.Game game)
     {
-        await Clients.Group($"game_{game.Id}")
+        await Clients.Users([game.Player1.UserId, game.Player2.UserId])
             .GameEnded(new(game.EndGame!.EndgameType.ToString(), game.EndGame.WonSide?.AsChar));
-        game.Player1.OngoingGamesByConnectionId.TryRemove(game.Player1ConnectionId, out _);
-        game.Player2.OngoingGamesByConnectionId.TryRemove(game.Player2ConnectionId, out _);
-        _ongoingGames.TryRemove($"game_{game.Id}", out _);
+        game.Player1.OngoingShortGame = null;
+        game.Player2.OngoingShortGame = null;
+        _ongoingShortGames.TryRemove(game.Id, out _);
     }
 }

@@ -50,14 +50,14 @@ const createGame = async () => {
   console.log("create invoked")
 }
 
-const joinGame = async (opponentUserId: string, opponentConnectionId: string) => {
-  const gameId = await connectionStore.invoke("join", opponentUserId, opponentConnectionId)
+const joinGame = async (opponentUserId: string) => {
+  const gameId = await connectionStore.invoke("join", opponentUserId)
   console.log("join invoked", gameId)
   navigateTo("/game/" + gameId)
 }
 
-const cancelGame = async (creatorConnectionId: string) => {
-  await connectionStore.invoke("cancel", creatorConnectionId)
+const cancelGame = async () => {
+  await connectionStore.invoke("cancel")
   console.log("cancel invoked")
 }
 </script>
@@ -100,13 +100,9 @@ const cancelGame = async (creatorConnectionId: string) => {
         <UButton
           v-if="row.creator.userId !== userStore.user?.id"
           label="Join"
-          @click="() => joinGame(row.creator.userId, row.creatorConnectionId)"
+          @click="() => joinGame(row.creator.userId)"
         />
-        <UButton
-          v-if="row.creator.userId === userStore.user?.id"
-          label="Cancel"
-          @click="() => cancelGame(row.creatorConnectionId)"
-        />
+        <UButton v-if="row.creator.userId === userStore.user?.id" label="Cancel" @click="cancelGame" />
       </template>
     </UTable>
   </UCard>

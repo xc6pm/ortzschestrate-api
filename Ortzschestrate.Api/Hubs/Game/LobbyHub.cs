@@ -23,52 +23,41 @@ public partial class GameHub
         try
         {
             var player = _playerCache.GetPlayer(Context.UserIdentifier!);
-            if (player.OngoingGamesByConnectionId.ContainsKey(Context.ConnectionId))
+            if (player.OngoingShortGame != null)
             {
-                throw new HubException("You're already in the middle of a game.");
+                throw new HubException("You're already playing a game. Finish that first.");
             }
 
-            _pendingGamesByCreatorConnectionId.TryAdd(Context.ConnectionId,
-                new PendingGame(player, Context.ConnectionId, timeLimit, color));
+            _pendingGamesByCreatorId.TryAdd(player.UserId,
+                new PendingGame(player, timeLimit, color));
         }
         finally
         {
             _lobbySemaphore.Release();
         }
 
-        await Clients.All.LobbyUpdated(_pendingGamesByCreatorConnectionId.Values.ToList());
+        await Clients.All.LobbyUpdated(_pendingGamesByCreatorId.Values.ToList());
     }
 
     [HubMethodName("getPending")]
-    public List<PendingGame> GetAllPendingGamesAsync()
-    {
-        return _pendingGamesByCreatorConnectionId.Values.ToList();
-    }
+    public List<PendingGame> GetAllPendingGamesAsync() => _pendingGamesByCreatorId.Values.ToList();
 
     [HubMethodName("cancel")]
-    public async Task CancelPendingGameAsync(string creatorConnectionId)
+    public async Task CancelPendingGameAsync()
     {
         await _lobbySemaphore.WaitAsync();
+        bool removedAnything;
         try
         {
-            var player = _playerCache.GetPlayer(Context.UserIdentifier!);
-            // Ensure it's the user who created it who's trying to cancel. 
-            if (_pendingGamesByCreatorConnectionId.TryGetValue(creatorConnectionId, out PendingGame? pendingGame) &&
-                pendingGame.Creator.UserId == player.UserId)
-            {
-                _pendingGamesByCreatorConnectionId.TryRemove(creatorConnectionId, out _);
-            }
-            else
-            {
-                throw new HubException("You can't cancel that game.");
-            }
+            removedAnything = _pendingGamesByCreatorId.TryRemove(Context.UserIdentifier!, out _);
         }
         finally
         {
             _lobbySemaphore.Release();
         }
 
-        await Clients.All.LobbyUpdated(_pendingGamesByCreatorConnectionId.Values.ToList());
+        if (removedAnything)
+            await Clients.All.LobbyUpdated(_pendingGamesByCreatorId.Values.ToList());
     }
 
     [HubMethodName("join")]
@@ -77,17 +66,9 @@ public partial class GameHub
     // - Is the creator the same connection/user that wants to join. -- that's invalid can be checked outside semaphore.
     // - Does the user have a pending game -- inside semaphore for updates to take place. user must cancel the pending game first
     // - Is the user already playing another game. -- inside the semaphore we must ensure we apply the latest updates. Only one game per user is allowed rn
-    public async Task<string> JoinGameAsync(string creatorId, string creatorConnectionId)
+    public async Task<string> JoinGameAsync(string creatorId)
     {
-        if (creatorConnectionId == Context.ConnectionId)
-        {
-            throw new HubException("Can't join your own game.");
-        }
-
-        var player1 = _playerCache.GetPlayer(creatorId);
-        var player2 = _playerCache.GetPlayer(Context.UserIdentifier!);
-
-        if (player1.UserId == player2.UserId)
+        if (creatorId == Context.UserIdentifier!)
         {
             throw new HubException("Can't join your own game.");
         }
@@ -96,26 +77,25 @@ public partial class GameHub
         await _lobbySemaphore.WaitAsync();
         try
         {
-            // These may be overwritten while waiting for the semaphore so get them again.
-            player1 = _playerCache.GetPlayer(creatorId);
-            player2 = _playerCache.GetPlayer(Context.UserIdentifier!);
-            if (_pendingGamesByCreatorConnectionId.ContainsKey(Context.ConnectionId))
+            var player1 = _playerCache.GetPlayer(creatorId);
+            var player2 = _playerCache.GetPlayer(Context.UserIdentifier!);
+            if (_pendingGamesByCreatorId.ContainsKey(Context.UserIdentifier!))
             {
                 throw new HubException("Cancel the game you created first.");
             }
 
-            if (player2.OngoingGamesByConnectionId.ContainsKey(Context.ConnectionId))
+            if (player2.OngoingShortGame != null)
             {
-                throw new HubException("You're already in the middle of a game.");
+                throw new HubException("You're already playing a game. Finish that first.");
             }
 
-            if (_pendingGamesByCreatorConnectionId.TryRemove(creatorConnectionId, out var pendingGame))
+            if (_pendingGamesByCreatorId.TryRemove(creatorId, out var pendingGame))
             {
-                startingGame = new Models.Game(pendingGame, player2, Context.ConnectionId);
-                player1.OngoingGamesByConnectionId[creatorConnectionId] = startingGame;
-                player2.OngoingGamesByConnectionId[Context.ConnectionId] = startingGame;
-                _ongoingGames[startingGame.Id] = startingGame;
-                return startingGame.Id;
+                startingGame = new Models.Game(pendingGame, player2);
+                player1.OngoingShortGame = startingGame;
+                player2.OngoingShortGame = startingGame;
+                _ongoingShortGames[startingGame.Id] = startingGame;
+                return startingGame.Id.ToString();
             }
             else // Player1 already started another game.
             {
@@ -128,11 +108,9 @@ public partial class GameHub
             // Want to execute these tasks outside the semaphore and before the return.
             if (startingGame != null)
             {
-                await Groups.AddToGroupAsync(creatorConnectionId, $"game_{startingGame.Id}");
-                await Groups.AddToGroupAsync(Context.ConnectionId, $"game_{startingGame.Id}");
-                await Clients.All.LobbyUpdated(_pendingGamesByCreatorConnectionId.Values.ToList());
+                await Clients.All.LobbyUpdated(_pendingGamesByCreatorId.Values.ToList());
                 await Clients.User(startingGame.Player1.UserId)
-                    .GameStarted(startingGame.Id);
+                    .GameStarted(startingGame.Id.ToString());
             }
         }
     }
