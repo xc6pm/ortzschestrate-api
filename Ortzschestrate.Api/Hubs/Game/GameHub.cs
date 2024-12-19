@@ -62,7 +62,7 @@ public partial class GameHub
 
         if (game.EndGame != null)
         {
-            await declareGameEndedAsync(game);
+            await disconnectEndedGameAsync(game);
         }
     }
 
@@ -73,25 +73,16 @@ public partial class GameHub
 
         if (game.IsPlayer1OutOfTime())
         {
-            await declareGameEndedAsync(game);
+            await disconnectEndedGameAsync(game);
             return true;
         }
 
         if (game.IsPlayer2OutOfTime())
         {
-            await declareGameEndedAsync(game);
+            await disconnectEndedGameAsync(game);
             return true;
         }
 
         return false;
-    }
-
-    private async Task declareGameEndedAsync(Models.Game game)
-    {
-        await Clients.Users([game.Player1.UserId, game.Player2.UserId])
-            .GameEnded(new(game.EndGame!.EndgameType.ToString(), game.EndGame.WonSide?.AsChar));
-        game.Player1.OngoingShortGame = null;
-        game.Player2.OngoingShortGame = null;
-        _ongoingShortGames.TryRemove(game.Id, out _);
     }
 }

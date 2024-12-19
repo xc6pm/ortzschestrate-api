@@ -32,26 +32,39 @@ public partial class GameHub : Hub<IGameClient>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         bool lobbyUpdated = false;
-
+        Models.Game? endedGame = null;
         await _lobbySemaphore.WaitAsync();
         try
         {
-            var player = _playerCache.GetPlayer(Context.UserIdentifier!);
+            if (_playerCache.GetRemainingConnections(Context.UserIdentifier!) == 1) // Last connection's closing.
+            {
+                var leavingPlayer = _playerCache.GetPlayer(Context.UserIdentifier!);
+                
+                if (leavingPlayer.OngoingShortGame != null)
+                {
+                    if (leavingPlayer.OngoingShortGame.MovesMade >= 10)
+                    {
+                        leavingPlayer.OngoingShortGame.Resign(leavingPlayer);
+                    }
+                    else
+                    {
+                        leavingPlayer.OngoingShortGame.Draw();
+                    }
 
-            if (player.OngoingShortGame != null)
-            {
-                // Finish the game, if more than 10 moves were made the abandoning player must lose.
-            }
-            else if (_playerCache.GetRemainingConnections(Context.UserIdentifier!) == 1) // Last connection's closing.
-            {
-                _pendingGamesByCreatorId.TryRemove(Context.UserIdentifier!, out _);
-                lobbyUpdated = true;
+                    endedGame = leavingPlayer.OngoingShortGame;
+                }
+                else if (_pendingGamesByCreatorId.TryRemove(Context.UserIdentifier!, out _))
+                {
+                    lobbyUpdated = true;
+                }
             }
         }
         finally
         {
             _lobbySemaphore.Release();
             _playerCache.OnDisconnect(Context);
+            if (endedGame != null)
+                await disconnectEndedGameAsync(endedGame);
             if (lobbyUpdated)
                 await Clients.All.LobbyUpdated(_pendingGamesByCreatorId.Values.ToList());
         }
@@ -59,5 +72,14 @@ public partial class GameHub : Hub<IGameClient>
         Debug.WriteLine("Connection closed");
         Debug.WriteLine(exception);
         await base.OnDisconnectedAsync(exception);
+    }
+
+    private async Task disconnectEndedGameAsync(Models.Game game)
+    {
+        await Clients.Users([game.Player1.UserId, game.Player2.UserId])
+            .GameEnded(new(game.EndGame!.EndgameType.ToString(), game.EndGame.WonSide?.AsChar));
+        game.Player1.OngoingShortGame = null;
+        game.Player2.OngoingShortGame = null;
+        _ongoingShortGames.TryRemove(game.Id, out _);
     }
 }

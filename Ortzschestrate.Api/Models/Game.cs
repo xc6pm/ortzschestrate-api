@@ -33,6 +33,7 @@ public class Game
 
     public string Pgn => _board.ToPgn();
     public EndGameInfo? EndGame => _board.EndGame;
+    public int MovesMade => _board.MoveIndex + 1;
 
     public bool Move(string userId, string move, out TimeSpan remainingTime)
     {
@@ -105,5 +106,22 @@ public class Game
         if (res)
             _board.Resign(Player2Color);
         return res;
+    }
+
+    public void Resign(Player player)
+    {
+        if (player == Player1)
+            Resign(Player1Color);
+        else if (player == Player2)
+            Resign(Player2Color);
+    }
+    public void Resign(PieceColor color)
+    {
+        _board.Resign(color);
+    }
+
+    public void Draw()
+    {
+        _board.Draw();
     }
 }
