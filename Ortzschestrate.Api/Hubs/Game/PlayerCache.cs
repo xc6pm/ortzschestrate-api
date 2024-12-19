@@ -27,9 +27,9 @@ public class PlayerCache
 
     public async Task OnNewConnectionAsync(HubCallerContext context)
     {
-        if (_playersById.TryGetValue(context.UserIdentifier!, out _))
+        if (_playerConnections.TryGetValue(context.UserIdentifier!, out var connections))
         {
-            _playerConnections[context.UserIdentifier!].Add(context.ConnectionId);
+            connections.Add(context.ConnectionId);
             return;
         }
 
@@ -41,7 +41,7 @@ public class PlayerCache
 
         var newPlayer = new Player(context.UserIdentifier!, user.UserName!);
         _playersById.TryAdd(context.UserIdentifier!, newPlayer);
-        _playerConnections.TryAdd(context.UserIdentifier!, []);
+        _playerConnections.TryAdd(context.UserIdentifier!, [context.ConnectionId]);
     }
 
     public void OnDisconnect(HubCallerContext context)
