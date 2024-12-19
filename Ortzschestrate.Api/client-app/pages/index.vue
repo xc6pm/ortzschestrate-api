@@ -31,6 +31,17 @@ const connectionStore = useConnectionStore()
 const pendingGamesFromServer: PendingGame[] = await connectionStore.invoke("getPending")
 const pendingGames = ref<PendingGame[]>(pendingGamesFromServer)
 
+const gameTimes = [
+  { name: "Rapid", value: 10 },
+  { name: "Blitz", value: 5 },
+  { name: "Bullet", value: 3 },
+]
+const colors = [
+  { name: "White", value: "w" },
+  { name: "Black", value: "b" },
+]
+const newGame = reactive({ time: 10, color: "w" })
+
 useConnectionEvent("NewGameCreated", (creator) => {
   console.log("new game created by ", creator)
 })
@@ -46,7 +57,7 @@ useConnectionEvent("GameStarted", (gameId) => {
 })
 
 const createGame = async () => {
-  await connectionStore.invoke("create", 3, "w")
+  await connectionStore.invoke("create", newGame.time, newGame.color)
   console.log("create invoked")
 }
 
@@ -63,47 +74,68 @@ const cancelGame = async () => {
 </script>
 
 <template>
-  <h1 class="text-center text-4xl mt-3">Welcome to ortzschestrate!</h1>
+  <section class="flex flex-col lg:flex-row">
+    <UCard class="my-3 ml-0 lg:mr-3 lg:w-80 lg:h-fit" :ui="{ body: { padding: 'p-3' }, strategy: 'override' }">
+      <h2 class="text-lg text-center">Setup a table</h2>
+      <UForm :state="newGame" @submit.prevent="createGame">
+        <UFormGroup label="Game Type:" class="my-3">
+          <USelectMenu
+            :options="gameTimes"
+            v-model="newGame.time"
+            option-attribute="name"
+            value-attribute="value"
+            placeholder="Game Type"
+            required
+          />
+        </UFormGroup>
+        <UFormGroup label="Color:" class="my-3">
+          <USelectMenu
+            :options="colors"
+            v-model="newGame.color"
+            option-attribute="name"
+            value-attribute="value"
+            placeholder="Color"
+            required
+          />
+        </UFormGroup>
+        <UButton type="submit" class="mb-3" block>Create</UButton>
+      </UForm>
+    </UCard>
 
-  <div class="flex flex-row justify-center mt-3">
-    <UButton class="justify-center" size="lg" @click="createGame">create game!</UButton>
-  </div>
-
-  <h3 class="text-2xl text-center mt-3">or</h3>
-  <h3 class="text-2xl text-center mt-3">Join a game:</h3>
-
-  <UCard :ui="{ body: { padding: 'p-0' } }" class="mt-3">
-    <UTable
-      :columns="pendingGameFields"
-      :rows="pendingGames"
-      :empty-state="{ icon: 'i-heroicons-circle-stack-20-solid', label: 'No pending games.' }"
-    >
-      <template #creator-data="{ row }">
-        {{ row.creator.name }}
-      </template>
-      <template #gameType-data="{ row }">
-        {{ row.gameType.name }}
-      </template>
-      <template #color-data="{ row }">
-        {{
-          // Check if it's an own game. If it's not show the opposite color
-          row.creator.userId === userStore.user?.id
-            ? row.creatorColor.asChar === "w"
-              ? "white"
-              : "black"
-            : row.creatorColor.asChar === "w"
-            ? "black"
-            : "white"
-        }}
-      </template>
-      <template #actions-data="{ row }">
-        <UButton
-          v-if="row.creator.userId !== userStore.user?.id"
-          label="Join"
-          @click="() => joinGame(row.creator.userId)"
-        />
-        <UButton v-if="row.creator.userId === userStore.user?.id" label="Cancel" @click="cancelGame" />
-      </template>
-    </UTable>
-  </UCard>
+    <UCard :ui="{ body: { padding: 'p-0' } }" class="mt-3 grow">
+      <h2 class="text-lg m-3 text-center">Join someone</h2>
+      <UTable
+        :columns="pendingGameFields"
+        :rows="pendingGames"
+        :empty-state="{ icon: 'i-heroicons-circle-stack-20-solid', label: 'No pending games.' }"
+      >
+        <template #creator-data="{ row }">
+          {{ row.creator.name }}
+        </template>
+        <template #gameType-data="{ row }">
+          {{ row.gameType.name }}
+        </template>
+        <template #color-data="{ row }">
+          {{
+            // Check if it's an own game. If it's not show the opposite color
+            row.creator.userId === userStore.user?.id
+              ? row.creatorColor.asChar === "w"
+                ? "white"
+                : "black"
+              : row.creatorColor.asChar === "w"
+              ? "black"
+              : "white"
+          }}
+        </template>
+        <template #actions-data="{ row }">
+          <UButton
+            v-if="row.creator.userId !== userStore.user?.id"
+            label="Join"
+            @click="() => joinGame(row.creator.userId)"
+          />
+          <UButton v-if="row.creator.userId === userStore.user?.id" label="Cancel" @click="cancelGame" />
+        </template>
+      </UTable>
+    </UCard>
+  </section>
 </template>
