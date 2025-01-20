@@ -1,0 +1,11 @@
+{
+  "name": "ortzschetrate-contracts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/xc6pm/ortzschestrate",
+  "author": "Hossein Ebrahimi",
+  "license": "MIT",
+  "devDependencies": {
+    "hardhat": "^2.22.18"
+  }
+}
