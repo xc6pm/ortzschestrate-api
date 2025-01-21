@@ -1,4 +1,5 @@
 import { HardhatUserConfig } from "hardhat/config"
+import "@nomicfoundation/hardhat-ethers";
 import "hardhat-deploy"
 
 const alchmeyApiKey = process.env.ALCHEMY_API_KEY
