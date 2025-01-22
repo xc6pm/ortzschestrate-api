@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ORTBet is Ownable {
     mapping(bytes32 => Game) games;
+    mapping(bytes32 => FinishedGame) finishedGames;
     mapping(address => uint256) userStakes;
 
     event GameCreated(
@@ -34,34 +35,34 @@ contract ORTBet is Ownable {
         address _player1Address,
         uint256 _betAmount
     ) public onlyOwner {
-        require(
-            !isGameInitiated(_gameId),
-            "A game with the given Id is already initiated."
-        );
-
         bytes32 gameIdHash = keccak256(abi.encodePacked(_gameId));
+        require(
+            !isGameInitiated(gameIdHash) && !isGameFinished(gameIdHash),
+            "GameId already taken."
+        );
+        require(_player1Address != address(0), "Invalid _player1Address.");
+        require(_betAmount > 0, "_betAmount must be greater than 0.");
+
         games[gameIdHash] = Game({
             betAmount: _betAmount,
             player1Address: _player1Address,
             player2Address: address(0),
             started: false,
             player1Paid: false,
-            player2Paid: false,
-            result: GameResult.NotDecided
+            player2Paid: false
         });
         emit GameCreated(gameIdHash, _player1Address, _betAmount);
     }
 
     function cancelPendingGame(
-        bytes32 calldata _gameId
-    ) external onlyOwner validGameId(_gameId) {
-        require(
-            !games[_gameId].started,
-            "The game can't be canelled. It's already started."
-        );
-
+        bytes32 _gameId
+    ) external onlyOwner validGameId(_gameId) gameNotStarted(_gameId) {
         if (games[_gameId].player1Paid) {
             userStakes[games[_gameId].player1Address] += games[_gameId]
+                .betAmount;
+        }
+        if (games[_gameId].player2Paid) {
+            userStakes[games[_gameId].player2Address] += games[_gameId]
                 .betAmount;
         }
 
@@ -70,10 +71,9 @@ contract ORTBet is Ownable {
     }
 
     function joinGame(
-        bytes32 calldata _gameId,
+        bytes32 _gameId,
         address _player2Address
-    ) external onlyOwner validGameId(_gameId) {
-        require(!games[_gameId].started, "That game has already started.");
+    ) external onlyOwner validGameId(_gameId) gameNotStarted(_gameId) {
         require(
             games[_gameId].player2Address == address(0),
             "Player2 already specified."
@@ -88,8 +88,8 @@ contract ORTBet is Ownable {
     }
 
     function depositBetAmount(
-        bytes32 calldata _gameId
-    ) external payable validGameId(_gameId) {
+        bytes32 _gameId
+    ) external payable validGameId(_gameId) gameNotStarted(_gameId) {
         require(
             msg.value >= games[_gameId].betAmount,
             "The amount sent is not sufficient for the bet specified on this game."
@@ -132,23 +132,13 @@ contract ORTBet is Ownable {
     }
 
     function endGame(
-        bytes32 calldata _gameId,
+        bytes32 _gameId,
         GameResult _gameResult
     ) external onlyOwner validGameId(_gameId) {
         require(
             games[_gameId].started,
             "That game hasn't been started (The players didn't pay their stakes)."
         );
-        require(
-            games[_gameId].result == GameResult.NotDecided,
-            "The game has ended before."
-        );
-        require(
-            _gameResult != GameResult.NotDecided,
-            "Can't reset game result to NotDecided."
-        );
-
-        games[_gameId].result = _gameResult;
 
         if (_gameResult == GameResult.Player1Won) {
             userStakes[games[_gameId].player1Address] += games[_gameId]
@@ -163,10 +153,19 @@ contract ORTBet is Ownable {
                 .betAmount;
         }
 
+        finishedGames[_gameId] = FinishedGame(
+            games[_gameId].betAmount,
+            games[_gameId].player1Address,
+            games[_gameId].player2Address,
+            _gameResult
+        );
+        delete games[_gameId];
+
         emit GameEnded(_gameId, _gameResult);
     }
 
     function withdrawStakes(uint256 _amount) external {
+        require(_amount > 0, "Withdrawal amount must be greater than 0.");
         require(
             userStakes[msg.sender] >= _amount,
             "Insufficient funds for withdrawal."
@@ -181,8 +180,19 @@ contract ORTBet is Ownable {
         revert("Direct deposits not allowed.");
     }
 
-    modifier validGameId(bytes32 calldata _gameId) {
-        require(isGameInitiated(_gameId), "There's no game by the given Id.");
+    modifier validGameId(bytes32 _gameId) {
+        require(
+            isGameInitiated(_gameId) && !isGameFinished(_gameId),
+            "Game either not initiated or already finished."
+        );
+        _;
+    }
+
+    modifier gameNotStarted(bytes32 _gameId) {
+        require(
+            !games[_gameId].started,
+            "Invalid action! Game already started."
+        );
         _;
     }
 
@@ -190,11 +200,14 @@ contract ORTBet is Ownable {
         return games[_gameId].player1Address != address(0);
     }
 
+    function isGameFinished(bytes32 _gameId) internal view returns (bool) {
+        return finishedGames[_gameId].player1Address != address(0);
+    }
+
     enum GameResult {
-        NotDecided,
+        Draw,
         Player1Won,
-        Player2Won,
-        Draw
+        Player2Won
     }
 
     struct Game {
@@ -204,6 +217,12 @@ contract ORTBet is Ownable {
         bool started;
         bool player1Paid;
         bool player2Paid;
+    }
+
+    struct FinishedGame {
+        uint256 betAmount;
+        address player1Address;
+        address player2Address;
         GameResult result;
     }
 }

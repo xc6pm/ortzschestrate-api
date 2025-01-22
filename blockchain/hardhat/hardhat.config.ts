@@ -1,17 +1,30 @@
 import { HardhatUserConfig } from "hardhat/config"
-import "@nomicfoundation/hardhat-ethers";
+import "@nomicfoundation/hardhat-ethers"
 import "hardhat-deploy"
 
 const alchmeyApiKey = process.env.ALCHEMY_API_KEY
-const deployerPrivateKey = process.env.DEPLOYER_PRIVATE_KEY || ""
+const deployerPrivateKey =
+  process.env.DEPLOYER_PRIVATE_KEY ||
+  "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 
 const config: HardhatUserConfig = {
-  defaultNetwork: "localhost",
+  defaultNetwork: "hardhat",
   networks: {
-    hardhat: {},
+    hardhat: {
+      forking: {
+        url: `https://eth-mainnet.alchemyapi.io/v2/${alchmeyApiKey}`,
+        enabled: process.env.MAINNET_FORKING_ENABLED === "true",
+      },
+    },
     sepolia: {
       url: `https://eth-sepolia.g.alchemy.com/v2/${alchmeyApiKey}`,
       accounts: [deployerPrivateKey],
+    },
+  },
+  namedAccounts: {
+    deployer: {
+      // By default, it will take the first Hardhat account as the deployer
+      default: 0,
     },
   },
   solidity: {

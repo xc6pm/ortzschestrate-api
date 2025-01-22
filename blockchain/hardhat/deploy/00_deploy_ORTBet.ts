@@ -5,18 +5,24 @@ const deployORTBet: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deployer } = await hre.getNamedAccounts()
   const { deploy } = hre.deployments
 
-  const deployResult = await deploy("ORTBet.sol", {
+  console.log("deployer: ", deployer)
+
+  const deployResult = await deploy("ORTBet", {
     from: deployer,
     args: [],
     log: true,
   })
 
-  const ortBet = await hre.ethers.getContractAt("ORTBet", deployResult.address)
-
   console.log("Contract ORTBet.sol deployed.")
+
+  const ortBet = await hre.ethers.getContractAt("ORTBet", deployResult.address)
 
   // console.log("transferring ownership...")
   // const ownerTx = await ortBet.transferOwnership("")
   // console.log("confirming...")
   // ownerTx.
 }
+
+export default deployORTBet
+
+deployORTBet.tags = ["ORTBet"]
