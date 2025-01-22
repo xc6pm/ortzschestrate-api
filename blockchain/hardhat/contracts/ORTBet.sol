@@ -4,9 +4,9 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ORTBet is Ownable {
-    mapping(bytes32 => Game) games;
-    mapping(bytes32 => FinishedGame) finishedGames;
-    mapping(address => uint256) userStakes;
+    mapping(bytes32 => Game) public games;
+    mapping(bytes32 => FinishedGame) public finishedGames;
+    mapping(address => uint256) public userStakes;
 
     event GameCreated(
         bytes32 indexed gameId,
