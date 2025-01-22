@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ortzschestrate.Data", "Ortz
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ortzschestrate.Utilities", "Ortzschestrate.Utilities\Ortzschestrate.Utilities.csproj", "{B15E5A01-5CD6-4BF7-80A3-C549A57D1149}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ortzschestrate.Web3", "Ortzschestrate.Web3\Ortzschestrate.Web3.csproj", "{4734235E-1662-46C3-8822-1B6805E0AEE6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{B15E5A01-5CD6-4BF7-80A3-C549A57D1149}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B15E5A01-5CD6-4BF7-80A3-C549A57D1149}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B15E5A01-5CD6-4BF7-80A3-C549A57D1149}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4734235E-1662-46C3-8822-1B6805E0AEE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4734235E-1662-46C3-8822-1B6805E0AEE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4734235E-1662-46C3-8822-1B6805E0AEE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4734235E-1662-46C3-8822-1B6805E0AEE6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
