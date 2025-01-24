@@ -54,13 +54,14 @@ contract ORTBet is Ownable {
     }
 
     function startGame(
-        bytes32 _gameId,
+        string calldata _gameId,
         address _player1,
         address _player2,
         uint256 _stakeAmount
     ) external onlyOwner {
+        bytes32 gameIdHash = keccak256(abi.encodePacked(_gameId));
         // Checking stakeAmount just to see if the struct was initiated before.
-        require(games[_gameId].stakeAmount == 0, "Game ID already exists.");
+        require(games[gameIdHash].stakeAmount == 0, "Game ID already exists.");
         require(
             _player1 != address(0) && _player2 != address(0),
             "Invalid player address."
@@ -81,7 +82,7 @@ contract ORTBet is Ownable {
         lockedStakes[_player1] += _stakeAmount;
         lockedStakes[_player2] += _stakeAmount;
 
-        games[_gameId] = Game({
+        games[gameIdHash] = Game({
             player1: _player1,
             player2: _player2,
             stakeAmount: _stakeAmount,
@@ -90,7 +91,7 @@ contract ORTBet is Ownable {
 
         emit StakesLocked(_player1, _stakeAmount);
         emit StakesLocked(_player2, _stakeAmount);
-        emit GameStarted(_gameId, _player1, _player2, _stakeAmount);
+        emit GameStarted(gameIdHash, _player1, _player2, _stakeAmount);
     }
 
     function resolveGame(
