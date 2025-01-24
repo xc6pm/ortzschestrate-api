@@ -9,6 +9,7 @@ using Ortzschestrate.Api.Hubs.Game;
 using Ortzschestrate.Api.Security;
 using Ortzschestrate.Api.Utilities;
 using Ortzschestrate.Data.Models;
+using Ortzschestrate.Infrastructure;
 using DbContext = Ortzschestrate.Data.DbContext;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -139,7 +140,8 @@ builder.Services.AddIdentityCore<User>(options =>
         options.User.AllowedUserNameCharacters = validUsernameChars;
     })
     .AddEntityFrameworkStores<DbContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddTokenProvider<WalletVerificationTokenProvider<User>>(WalletVerificationTokenProvider<User>.Key);
 
 builder.Services.AddSignalR();
 
@@ -153,6 +155,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDataProtection();
 
+builder.Services.AddTransient<WalletVerificationTokenProvider<User>>();
 
 builder.Services.AddSingleton<JwtIntoCookieInjector>();
 builder.Services.AddSingleton<AuthenticationHelper>();

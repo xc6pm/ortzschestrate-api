@@ -46,127 +46,24 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet
         {
         }
 
-        public virtual Task<string> CancelPendingGameRequestAsync(CancelPendingGameFunction cancelPendingGameFunction)
+        public virtual Task<string> DepositStakesRequestAsync(DepositStakesFunction depositStakesFunction)
         {
-             return ContractHandler.SendRequestAsync(cancelPendingGameFunction);
+             return ContractHandler.SendRequestAsync(depositStakesFunction);
         }
 
-        public virtual Task<TransactionReceipt> CancelPendingGameRequestAndWaitForReceiptAsync(CancelPendingGameFunction cancelPendingGameFunction, CancellationTokenSource cancellationToken = null)
+        public virtual Task<string> DepositStakesRequestAsync()
         {
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(cancelPendingGameFunction, cancellationToken);
+             return ContractHandler.SendRequestAsync<DepositStakesFunction>();
         }
 
-        public virtual Task<string> CancelPendingGameRequestAsync(byte[] gameId)
+        public virtual Task<TransactionReceipt> DepositStakesRequestAndWaitForReceiptAsync(DepositStakesFunction depositStakesFunction, CancellationTokenSource cancellationToken = null)
         {
-            var cancelPendingGameFunction = new CancelPendingGameFunction();
-                cancelPendingGameFunction.GameId = gameId;
-            
-             return ContractHandler.SendRequestAsync(cancelPendingGameFunction);
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(depositStakesFunction, cancellationToken);
         }
 
-        public virtual Task<TransactionReceipt> CancelPendingGameRequestAndWaitForReceiptAsync(byte[] gameId, CancellationTokenSource cancellationToken = null)
+        public virtual Task<TransactionReceipt> DepositStakesRequestAndWaitForReceiptAsync(CancellationTokenSource cancellationToken = null)
         {
-            var cancelPendingGameFunction = new CancelPendingGameFunction();
-                cancelPendingGameFunction.GameId = gameId;
-            
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(cancelPendingGameFunction, cancellationToken);
-        }
-
-        public virtual Task<string> CreatePendingGameRequestAsync(CreatePendingGameFunction createPendingGameFunction)
-        {
-             return ContractHandler.SendRequestAsync(createPendingGameFunction);
-        }
-
-        public virtual Task<TransactionReceipt> CreatePendingGameRequestAndWaitForReceiptAsync(CreatePendingGameFunction createPendingGameFunction, CancellationTokenSource cancellationToken = null)
-        {
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(createPendingGameFunction, cancellationToken);
-        }
-
-        public virtual Task<string> CreatePendingGameRequestAsync(string gameId, string player1Address, BigInteger betAmount)
-        {
-            var createPendingGameFunction = new CreatePendingGameFunction();
-                createPendingGameFunction.GameId = gameId;
-                createPendingGameFunction.Player1Address = player1Address;
-                createPendingGameFunction.BetAmount = betAmount;
-            
-             return ContractHandler.SendRequestAsync(createPendingGameFunction);
-        }
-
-        public virtual Task<TransactionReceipt> CreatePendingGameRequestAndWaitForReceiptAsync(string gameId, string player1Address, BigInteger betAmount, CancellationTokenSource cancellationToken = null)
-        {
-            var createPendingGameFunction = new CreatePendingGameFunction();
-                createPendingGameFunction.GameId = gameId;
-                createPendingGameFunction.Player1Address = player1Address;
-                createPendingGameFunction.BetAmount = betAmount;
-            
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(createPendingGameFunction, cancellationToken);
-        }
-
-        public virtual Task<string> DepositBetAmountRequestAsync(DepositBetAmountFunction depositBetAmountFunction)
-        {
-             return ContractHandler.SendRequestAsync(depositBetAmountFunction);
-        }
-
-        public virtual Task<TransactionReceipt> DepositBetAmountRequestAndWaitForReceiptAsync(DepositBetAmountFunction depositBetAmountFunction, CancellationTokenSource cancellationToken = null)
-        {
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(depositBetAmountFunction, cancellationToken);
-        }
-
-        public virtual Task<string> DepositBetAmountRequestAsync(byte[] gameId)
-        {
-            var depositBetAmountFunction = new DepositBetAmountFunction();
-                depositBetAmountFunction.GameId = gameId;
-            
-             return ContractHandler.SendRequestAsync(depositBetAmountFunction);
-        }
-
-        public virtual Task<TransactionReceipt> DepositBetAmountRequestAndWaitForReceiptAsync(byte[] gameId, CancellationTokenSource cancellationToken = null)
-        {
-            var depositBetAmountFunction = new DepositBetAmountFunction();
-                depositBetAmountFunction.GameId = gameId;
-            
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(depositBetAmountFunction, cancellationToken);
-        }
-
-        public virtual Task<string> EndGameRequestAsync(EndGameFunction endGameFunction)
-        {
-             return ContractHandler.SendRequestAsync(endGameFunction);
-        }
-
-        public virtual Task<TransactionReceipt> EndGameRequestAndWaitForReceiptAsync(EndGameFunction endGameFunction, CancellationTokenSource cancellationToken = null)
-        {
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(endGameFunction, cancellationToken);
-        }
-
-        public virtual Task<string> EndGameRequestAsync(byte[] gameId, byte gameResult)
-        {
-            var endGameFunction = new EndGameFunction();
-                endGameFunction.GameId = gameId;
-                endGameFunction.GameResult = gameResult;
-            
-             return ContractHandler.SendRequestAsync(endGameFunction);
-        }
-
-        public virtual Task<TransactionReceipt> EndGameRequestAndWaitForReceiptAsync(byte[] gameId, byte gameResult, CancellationTokenSource cancellationToken = null)
-        {
-            var endGameFunction = new EndGameFunction();
-                endGameFunction.GameId = gameId;
-                endGameFunction.GameResult = gameResult;
-            
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(endGameFunction, cancellationToken);
-        }
-
-        public virtual Task<FinishedGamesOutputDTO> FinishedGamesQueryAsync(FinishedGamesFunction finishedGamesFunction, BlockParameter blockParameter = null)
-        {
-            return ContractHandler.QueryDeserializingToObjectAsync<FinishedGamesFunction, FinishedGamesOutputDTO>(finishedGamesFunction, blockParameter);
-        }
-
-        public virtual Task<FinishedGamesOutputDTO> FinishedGamesQueryAsync(byte[] returnValue1, BlockParameter blockParameter = null)
-        {
-            var finishedGamesFunction = new FinishedGamesFunction();
-                finishedGamesFunction.ReturnValue1 = returnValue1;
-            
-            return ContractHandler.QueryDeserializingToObjectAsync<FinishedGamesFunction, FinishedGamesOutputDTO>(finishedGamesFunction, blockParameter);
+             return ContractHandler.SendRequestAndWaitForReceiptAsync<DepositStakesFunction>(null, cancellationToken);
         }
 
         public virtual Task<GamesOutputDTO> GamesQueryAsync(GamesFunction gamesFunction, BlockParameter blockParameter = null)
@@ -182,32 +79,18 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet
             return ContractHandler.QueryDeserializingToObjectAsync<GamesFunction, GamesOutputDTO>(gamesFunction, blockParameter);
         }
 
-        public virtual Task<string> JoinGameRequestAsync(JoinGameFunction joinGameFunction)
+        public Task<BigInteger> LockedStakesQueryAsync(LockedStakesFunction lockedStakesFunction, BlockParameter blockParameter = null)
         {
-             return ContractHandler.SendRequestAsync(joinGameFunction);
+            return ContractHandler.QueryAsync<LockedStakesFunction, BigInteger>(lockedStakesFunction, blockParameter);
         }
 
-        public virtual Task<TransactionReceipt> JoinGameRequestAndWaitForReceiptAsync(JoinGameFunction joinGameFunction, CancellationTokenSource cancellationToken = null)
+        
+        public virtual Task<BigInteger> LockedStakesQueryAsync(string returnValue1, BlockParameter blockParameter = null)
         {
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(joinGameFunction, cancellationToken);
-        }
-
-        public virtual Task<string> JoinGameRequestAsync(byte[] gameId, string player2Address)
-        {
-            var joinGameFunction = new JoinGameFunction();
-                joinGameFunction.GameId = gameId;
-                joinGameFunction.Player2Address = player2Address;
+            var lockedStakesFunction = new LockedStakesFunction();
+                lockedStakesFunction.ReturnValue1 = returnValue1;
             
-             return ContractHandler.SendRequestAsync(joinGameFunction);
-        }
-
-        public virtual Task<TransactionReceipt> JoinGameRequestAndWaitForReceiptAsync(byte[] gameId, string player2Address, CancellationTokenSource cancellationToken = null)
-        {
-            var joinGameFunction = new JoinGameFunction();
-                joinGameFunction.GameId = gameId;
-                joinGameFunction.Player2Address = player2Address;
-            
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(joinGameFunction, cancellationToken);
+            return ContractHandler.QueryAsync<LockedStakesFunction, BigInteger>(lockedStakesFunction, blockParameter);
         }
 
         public Task<string> OwnerQueryAsync(OwnerFunction ownerFunction, BlockParameter blockParameter = null)
@@ -241,6 +124,66 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet
              return ContractHandler.SendRequestAndWaitForReceiptAsync<RenounceOwnershipFunction>(null, cancellationToken);
         }
 
+        public virtual Task<string> ResolveGameRequestAsync(ResolveGameFunction resolveGameFunction)
+        {
+             return ContractHandler.SendRequestAsync(resolveGameFunction);
+        }
+
+        public virtual Task<TransactionReceipt> ResolveGameRequestAndWaitForReceiptAsync(ResolveGameFunction resolveGameFunction, CancellationTokenSource cancellationToken = null)
+        {
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(resolveGameFunction, cancellationToken);
+        }
+
+        public virtual Task<string> ResolveGameRequestAsync(byte[] gameId, byte result)
+        {
+            var resolveGameFunction = new ResolveGameFunction();
+                resolveGameFunction.GameId = gameId;
+                resolveGameFunction.Result = result;
+            
+             return ContractHandler.SendRequestAsync(resolveGameFunction);
+        }
+
+        public virtual Task<TransactionReceipt> ResolveGameRequestAndWaitForReceiptAsync(byte[] gameId, byte result, CancellationTokenSource cancellationToken = null)
+        {
+            var resolveGameFunction = new ResolveGameFunction();
+                resolveGameFunction.GameId = gameId;
+                resolveGameFunction.Result = result;
+            
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(resolveGameFunction, cancellationToken);
+        }
+
+        public virtual Task<string> StartGameRequestAsync(StartGameFunction startGameFunction)
+        {
+             return ContractHandler.SendRequestAsync(startGameFunction);
+        }
+
+        public virtual Task<TransactionReceipt> StartGameRequestAndWaitForReceiptAsync(StartGameFunction startGameFunction, CancellationTokenSource cancellationToken = null)
+        {
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(startGameFunction, cancellationToken);
+        }
+
+        public virtual Task<string> StartGameRequestAsync(string gameId, string player1, string player2, BigInteger stakeAmount)
+        {
+            var startGameFunction = new StartGameFunction();
+                startGameFunction.GameId = gameId;
+                startGameFunction.Player1 = player1;
+                startGameFunction.Player2 = player2;
+                startGameFunction.StakeAmount = stakeAmount;
+            
+             return ContractHandler.SendRequestAsync(startGameFunction);
+        }
+
+        public virtual Task<TransactionReceipt> StartGameRequestAndWaitForReceiptAsync(string gameId, string player1, string player2, BigInteger stakeAmount, CancellationTokenSource cancellationToken = null)
+        {
+            var startGameFunction = new StartGameFunction();
+                startGameFunction.GameId = gameId;
+                startGameFunction.Player1 = player1;
+                startGameFunction.Player2 = player2;
+                startGameFunction.StakeAmount = stakeAmount;
+            
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(startGameFunction, cancellationToken);
+        }
+
         public virtual Task<string> TransferOwnershipRequestAsync(TransferOwnershipFunction transferOwnershipFunction)
         {
              return ContractHandler.SendRequestAsync(transferOwnershipFunction);
@@ -267,18 +210,18 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet
              return ContractHandler.SendRequestAndWaitForReceiptAsync(transferOwnershipFunction, cancellationToken);
         }
 
-        public Task<BigInteger> UserStakesQueryAsync(UserStakesFunction userStakesFunction, BlockParameter blockParameter = null)
+        public Task<BigInteger> UserBalancesQueryAsync(UserBalancesFunction userBalancesFunction, BlockParameter blockParameter = null)
         {
-            return ContractHandler.QueryAsync<UserStakesFunction, BigInteger>(userStakesFunction, blockParameter);
+            return ContractHandler.QueryAsync<UserBalancesFunction, BigInteger>(userBalancesFunction, blockParameter);
         }
 
         
-        public virtual Task<BigInteger> UserStakesQueryAsync(string returnValue1, BlockParameter blockParameter = null)
+        public virtual Task<BigInteger> UserBalancesQueryAsync(string returnValue1, BlockParameter blockParameter = null)
         {
-            var userStakesFunction = new UserStakesFunction();
-                userStakesFunction.ReturnValue1 = returnValue1;
+            var userBalancesFunction = new UserBalancesFunction();
+                userBalancesFunction.ReturnValue1 = returnValue1;
             
-            return ContractHandler.QueryAsync<UserStakesFunction, BigInteger>(userStakesFunction, blockParameter);
+            return ContractHandler.QueryAsync<UserBalancesFunction, BigInteger>(userBalancesFunction, blockParameter);
         }
 
         public virtual Task<string> WithdrawStakesRequestAsync(WithdrawStakesFunction withdrawStakesFunction)
@@ -311,17 +254,15 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet
         {
             return new List<Type>
             {
-                typeof(CancelPendingGameFunction),
-                typeof(CreatePendingGameFunction),
-                typeof(DepositBetAmountFunction),
-                typeof(EndGameFunction),
-                typeof(FinishedGamesFunction),
+                typeof(DepositStakesFunction),
                 typeof(GamesFunction),
-                typeof(JoinGameFunction),
+                typeof(LockedStakesFunction),
                 typeof(OwnerFunction),
                 typeof(RenounceOwnershipFunction),
+                typeof(ResolveGameFunction),
+                typeof(StartGameFunction),
                 typeof(TransferOwnershipFunction),
-                typeof(UserStakesFunction),
+                typeof(UserBalancesFunction),
                 typeof(WithdrawStakesFunction)
             };
         }
@@ -330,13 +271,12 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet
         {
             return new List<Type>
             {
-                typeof(ChangeReturnedEventDTO),
-                typeof(GameCanceledEventDTO),
-                typeof(GameCreatedEventDTO),
-                typeof(GameEndedEventDTO),
-                typeof(GameJoinedEventDTO),
-                typeof(GameStakesDepositedEventDTO),
+                typeof(GameResolvedEventDTO),
+                typeof(GameStartedEventDTO),
                 typeof(OwnershipTransferredEventDTO),
+                typeof(StakesDepositedEventDTO),
+                typeof(StakesLockedEventDTO),
+                typeof(StakesUnlockedEventDTO),
                 typeof(StakesWithdrawnEventDTO)
             };
         }

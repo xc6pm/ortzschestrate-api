@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Gera.Chess" Version="1.1.1" />
+    <PackageReference Include="MailKit" Version="4.9.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
@@ -36,7 +37,9 @@
 
    <ItemGroup>
      <ProjectReference Include="..\Ortzschestrate.Data\Ortzschestrate.Data.csproj" />
+     <ProjectReference Include="..\Ortzschestrate.Infrastructure\Ortzschestrate.Infrastructure.csproj" />
      <ProjectReference Include="..\Ortzschestrate.Utilities\Ortzschestrate.Utilities.csproj" />
+     <ProjectReference Include="..\Ortzschestrate.Web3\Ortzschestrate.Web3.csproj" />
    </ItemGroup>
 
    <ItemGroup>

@@ -14,4 +14,8 @@
       <PackageReference Include="Nethereum.Web3" Version="4.28.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Ortzschestrate.Infrastructure\Ortzschestrate.Infrastructure.csproj" />
+    </ItemGroup>
+
 </Project>

@@ -27,55 +27,12 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
 
     }
 
-    public partial class CancelPendingGameFunction : CancelPendingGameFunctionBase { }
+    public partial class DepositStakesFunction : DepositStakesFunctionBase { }
 
-    [Function("cancelPendingGame")]
-    public class CancelPendingGameFunctionBase : FunctionMessage
+    [Function("depositStakes")]
+    public class DepositStakesFunctionBase : FunctionMessage
     {
-        [Parameter("bytes32", "_gameId", 1)]
-        public virtual byte[] GameId { get; set; }
-    }
 
-    public partial class CreatePendingGameFunction : CreatePendingGameFunctionBase { }
-
-    [Function("createPendingGame")]
-    public class CreatePendingGameFunctionBase : FunctionMessage
-    {
-        [Parameter("string", "_gameId", 1)]
-        public virtual string GameId { get; set; }
-        [Parameter("address", "_player1Address", 2)]
-        public virtual string Player1Address { get; set; }
-        [Parameter("uint256", "_betAmount", 3)]
-        public virtual BigInteger BetAmount { get; set; }
-    }
-
-    public partial class DepositBetAmountFunction : DepositBetAmountFunctionBase { }
-
-    [Function("depositBetAmount")]
-    public class DepositBetAmountFunctionBase : FunctionMessage
-    {
-        [Parameter("bytes32", "_gameId", 1)]
-        public virtual byte[] GameId { get; set; }
-    }
-
-    public partial class EndGameFunction : EndGameFunctionBase { }
-
-    [Function("endGame")]
-    public class EndGameFunctionBase : FunctionMessage
-    {
-        [Parameter("bytes32", "_gameId", 1)]
-        public virtual byte[] GameId { get; set; }
-        [Parameter("uint8", "_gameResult", 2)]
-        public virtual byte GameResult { get; set; }
-    }
-
-    public partial class FinishedGamesFunction : FinishedGamesFunctionBase { }
-
-    [Function("finishedGames", typeof(FinishedGamesOutputDTO))]
-    public class FinishedGamesFunctionBase : FunctionMessage
-    {
-        [Parameter("bytes32", "", 1)]
-        public virtual byte[] ReturnValue1 { get; set; }
     }
 
     public partial class GamesFunction : GamesFunctionBase { }
@@ -87,15 +44,13 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
         public virtual byte[] ReturnValue1 { get; set; }
     }
 
-    public partial class JoinGameFunction : JoinGameFunctionBase { }
+    public partial class LockedStakesFunction : LockedStakesFunctionBase { }
 
-    [Function("joinGame")]
-    public class JoinGameFunctionBase : FunctionMessage
+    [Function("lockedStakes", "uint256")]
+    public class LockedStakesFunctionBase : FunctionMessage
     {
-        [Parameter("bytes32", "_gameId", 1)]
-        public virtual byte[] GameId { get; set; }
-        [Parameter("address", "_player2Address", 2)]
-        public virtual string Player2Address { get; set; }
+        [Parameter("address", "", 1)]
+        public virtual string ReturnValue1 { get; set; }
     }
 
     public partial class OwnerFunction : OwnerFunctionBase { }
@@ -114,6 +69,32 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
 
     }
 
+    public partial class ResolveGameFunction : ResolveGameFunctionBase { }
+
+    [Function("resolveGame")]
+    public class ResolveGameFunctionBase : FunctionMessage
+    {
+        [Parameter("bytes32", "_gameId", 1)]
+        public virtual byte[] GameId { get; set; }
+        [Parameter("uint8", "_result", 2)]
+        public virtual byte Result { get; set; }
+    }
+
+    public partial class StartGameFunction : StartGameFunctionBase { }
+
+    [Function("startGame")]
+    public class StartGameFunctionBase : FunctionMessage
+    {
+        [Parameter("string", "_gameId", 1)]
+        public virtual string GameId { get; set; }
+        [Parameter("address", "_player1", 2)]
+        public virtual string Player1 { get; set; }
+        [Parameter("address", "_player2", 3)]
+        public virtual string Player2 { get; set; }
+        [Parameter("uint256", "_stakeAmount", 4)]
+        public virtual BigInteger StakeAmount { get; set; }
+    }
+
     public partial class TransferOwnershipFunction : TransferOwnershipFunctionBase { }
 
     [Function("transferOwnership")]
@@ -123,10 +104,10 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
         public virtual string NewOwner { get; set; }
     }
 
-    public partial class UserStakesFunction : UserStakesFunctionBase { }
+    public partial class UserBalancesFunction : UserBalancesFunctionBase { }
 
-    [Function("userStakes", "uint256")]
-    public class UserStakesFunctionBase : FunctionMessage
+    [Function("userBalances", "uint256")]
+    public class UserBalancesFunctionBase : FunctionMessage
     {
         [Parameter("address", "", 1)]
         public virtual string ReturnValue1 { get; set; }
@@ -137,49 +118,14 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
     [Function("withdrawStakes")]
     public class WithdrawStakesFunctionBase : FunctionMessage
     {
-        [Parameter("uint256", "_amount", 1)]
+        [Parameter("uint256", "amount", 1)]
         public virtual BigInteger Amount { get; set; }
     }
 
-    public partial class ChangeReturnedEventDTO : ChangeReturnedEventDTOBase { }
+    public partial class GameResolvedEventDTO : GameResolvedEventDTOBase { }
 
-    [Event("ChangeReturned")]
-    public class ChangeReturnedEventDTOBase : IEventDTO
-    {
-        [Parameter("bytes32", "gameId", 1, true )]
-        public virtual byte[] GameId { get; set; }
-        [Parameter("address", "playerAddress", 2, true )]
-        public virtual string PlayerAddress { get; set; }
-        [Parameter("uint256", "changeAmount", 3, false )]
-        public virtual BigInteger ChangeAmount { get; set; }
-    }
-
-    public partial class GameCanceledEventDTO : GameCanceledEventDTOBase { }
-
-    [Event("GameCanceled")]
-    public class GameCanceledEventDTOBase : IEventDTO
-    {
-        [Parameter("bytes32", "gameId", 1, true )]
-        public virtual byte[] GameId { get; set; }
-    }
-
-    public partial class GameCreatedEventDTO : GameCreatedEventDTOBase { }
-
-    [Event("GameCreated")]
-    public class GameCreatedEventDTOBase : IEventDTO
-    {
-        [Parameter("bytes32", "gameId", 1, true )]
-        public virtual byte[] GameId { get; set; }
-        [Parameter("address", "player1", 2, true )]
-        public virtual string Player1 { get; set; }
-        [Parameter("uint256", "betAmount", 3, false )]
-        public virtual BigInteger BetAmount { get; set; }
-    }
-
-    public partial class GameEndedEventDTO : GameEndedEventDTOBase { }
-
-    [Event("GameEnded")]
-    public class GameEndedEventDTOBase : IEventDTO
+    [Event("GameResolved")]
+    public class GameResolvedEventDTOBase : IEventDTO
     {
         [Parameter("bytes32", "gameId", 1, true )]
         public virtual byte[] GameId { get; set; }
@@ -187,28 +133,19 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
         public virtual byte Result { get; set; }
     }
 
-    public partial class GameJoinedEventDTO : GameJoinedEventDTOBase { }
+    public partial class GameStartedEventDTO : GameStartedEventDTOBase { }
 
-    [Event("GameJoined")]
-    public class GameJoinedEventDTOBase : IEventDTO
+    [Event("GameStarted")]
+    public class GameStartedEventDTOBase : IEventDTO
     {
         [Parameter("bytes32", "gameId", 1, true )]
         public virtual byte[] GameId { get; set; }
-        [Parameter("address", "player2", 2, true )]
+        [Parameter("address", "player1", 2, true )]
+        public virtual string Player1 { get; set; }
+        [Parameter("address", "player2", 3, true )]
         public virtual string Player2 { get; set; }
-    }
-
-    public partial class GameStakesDepositedEventDTO : GameStakesDepositedEventDTOBase { }
-
-    [Event("GameStakesDeposited")]
-    public class GameStakesDepositedEventDTOBase : IEventDTO
-    {
-        [Parameter("bytes32", "gameId", 1, true )]
-        public virtual byte[] GameId { get; set; }
-        [Parameter("address", "playerAddress", 2, true )]
-        public virtual string PlayerAddress { get; set; }
-        [Parameter("bool", "isDepositerPlayer1", 3, false )]
-        public virtual bool IsDepositerPlayer1 { get; set; }
+        [Parameter("uint256", "stakeAmount", 4, false )]
+        public virtual BigInteger StakeAmount { get; set; }
     }
 
     public partial class OwnershipTransferredEventDTO : OwnershipTransferredEventDTOBase { }
@@ -222,13 +159,46 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
         public virtual string NewOwner { get; set; }
     }
 
+    public partial class StakesDepositedEventDTO : StakesDepositedEventDTOBase { }
+
+    [Event("StakesDeposited")]
+    public class StakesDepositedEventDTOBase : IEventDTO
+    {
+        [Parameter("address", "player", 1, true )]
+        public virtual string Player { get; set; }
+        [Parameter("uint256", "amount", 2, false )]
+        public virtual BigInteger Amount { get; set; }
+    }
+
+    public partial class StakesLockedEventDTO : StakesLockedEventDTOBase { }
+
+    [Event("StakesLocked")]
+    public class StakesLockedEventDTOBase : IEventDTO
+    {
+        [Parameter("address", "player", 1, true )]
+        public virtual string Player { get; set; }
+        [Parameter("uint256", "amount", 2, false )]
+        public virtual BigInteger Amount { get; set; }
+    }
+
+    public partial class StakesUnlockedEventDTO : StakesUnlockedEventDTOBase { }
+
+    [Event("StakesUnlocked")]
+    public class StakesUnlockedEventDTOBase : IEventDTO
+    {
+        [Parameter("address", "player", 1, true )]
+        public virtual string Player { get; set; }
+        [Parameter("uint256", "amount", 2, false )]
+        public virtual BigInteger Amount { get; set; }
+    }
+
     public partial class StakesWithdrawnEventDTO : StakesWithdrawnEventDTOBase { }
 
     [Event("StakesWithdrawn")]
     public class StakesWithdrawnEventDTOBase : IEventDTO
     {
-        [Parameter("address", "playerAddress", 1, true )]
-        public virtual string PlayerAddress { get; set; }
+        [Parameter("address", "player", 1, true )]
+        public virtual string Player { get; set; }
         [Parameter("uint256", "amount", 2, false )]
         public virtual BigInteger Amount { get; set; }
     }
@@ -253,47 +223,29 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
 
 
 
-
-
-
-
-
-
-    public partial class FinishedGamesOutputDTO : FinishedGamesOutputDTOBase { }
-
-    [FunctionOutput]
-    public class FinishedGamesOutputDTOBase : IFunctionOutputDTO 
-    {
-        [Parameter("uint256", "betAmount", 1)]
-        public virtual BigInteger BetAmount { get; set; }
-        [Parameter("address", "player1Address", 2)]
-        public virtual string Player1Address { get; set; }
-        [Parameter("address", "player2Address", 3)]
-        public virtual string Player2Address { get; set; }
-        [Parameter("uint8", "result", 4)]
-        public virtual byte Result { get; set; }
-    }
-
     public partial class GamesOutputDTO : GamesOutputDTOBase { }
 
     [FunctionOutput]
     public class GamesOutputDTOBase : IFunctionOutputDTO 
     {
-        [Parameter("uint256", "betAmount", 1)]
-        public virtual BigInteger BetAmount { get; set; }
-        [Parameter("address", "player1Address", 2)]
-        public virtual string Player1Address { get; set; }
-        [Parameter("address", "player2Address", 3)]
-        public virtual string Player2Address { get; set; }
-        [Parameter("bool", "started", 4)]
-        public virtual bool Started { get; set; }
-        [Parameter("bool", "player1Paid", 5)]
-        public virtual bool Player1Paid { get; set; }
-        [Parameter("bool", "player2Paid", 6)]
-        public virtual bool Player2Paid { get; set; }
+        [Parameter("address", "player1", 1)]
+        public virtual string Player1 { get; set; }
+        [Parameter("address", "player2", 2)]
+        public virtual string Player2 { get; set; }
+        [Parameter("uint256", "stakeAmount", 3)]
+        public virtual BigInteger StakeAmount { get; set; }
+        [Parameter("bool", "active", 4)]
+        public virtual bool Active { get; set; }
     }
 
+    public partial class LockedStakesOutputDTO : LockedStakesOutputDTOBase { }
 
+    [FunctionOutput]
+    public class LockedStakesOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("uint256", "", 1)]
+        public virtual BigInteger ReturnValue1 { get; set; }
+    }
 
     public partial class OwnerOutputDTO : OwnerOutputDTOBase { }
 
@@ -308,10 +260,14 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
 
 
 
-    public partial class UserStakesOutputDTO : UserStakesOutputDTOBase { }
+
+
+
+
+    public partial class UserBalancesOutputDTO : UserBalancesOutputDTOBase { }
 
     [FunctionOutput]
-    public class UserStakesOutputDTOBase : IFunctionOutputDTO 
+    public class UserBalancesOutputDTOBase : IFunctionOutputDTO 
     {
         [Parameter("uint256", "", 1)]
         public virtual BigInteger ReturnValue1 { get; set; }

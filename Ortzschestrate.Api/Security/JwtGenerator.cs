@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using Ortzschestrate.Api.Utilities;
+using Ortzschestrate.Infrastructure;
 
 namespace Ortzschestrate.Api.Security;
 
