@@ -14,7 +14,7 @@ public class WalletController : ControllerBase
 {
     [Authorize]
     [HttpPost]
-    public async Task<IResult> RegisterWallet(string walletAddress, [FromServices] DbContext dbContext,
+    public async Task<IResult> Verify(string walletAddress, [FromServices] DbContext dbContext,
         [FromServices] UserManager<User> userManager, [FromServices] EmailSender emailSender)
     {
         if (!Validator.IsValidEthereumAddressHexFormat(walletAddress))
@@ -28,14 +28,14 @@ public class WalletController : ControllerBase
         user.UnverifiedWalletAddress = walletAddress;
 
         var token = await generateWalletVerificationTokenAsync(userManager, user);
-        var link = Url.Action(nameof(VerifyWallet), new { token, email = user.Email });
+        var link = Url.Action(nameof(Confirm), new { token, email = user.Email });
 
         await emailSender.SendWalletVerificationEmailAsync(user.Email!, link!);
         return Results.Ok();
     }
 
     [HttpGet]
-    public async Task<IResult> VerifyWallet(string token, string email, [FromServices] UserManager<User> userManager)
+    public async Task<IResult> Confirm(string token, string email, [FromServices] UserManager<User> userManager)
     {
         var user = await userManager.FindByEmailAsync(email);
         if (user == null)

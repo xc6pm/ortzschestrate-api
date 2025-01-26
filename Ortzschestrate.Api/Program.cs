@@ -153,6 +153,7 @@ builder.Services.AddCors(options =>
 });
 
 
+    
 builder.Services.AddDataProtection();
 
 builder.Services.AddTransient<WalletVerificationTokenProvider<User>>();
@@ -161,6 +162,7 @@ builder.Services.AddSingleton<JwtIntoCookieInjector>();
 builder.Services.AddSingleton<AuthenticationHelper>();
 
 builder.Services.AddSingleton<PlayerCache>();
+builder.Services.AddSingleton<EmailSender>();
 
 builder.Services.AddControllers();
 

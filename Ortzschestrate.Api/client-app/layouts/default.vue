@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import UserButton from "~/components/auth/UserButton.vue"
+
+const userStore = useUserStore()
 </script>
 
 <template>
@@ -7,8 +9,10 @@ import UserButton from "~/components/auth/UserButton.vue"
     <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
       <NuxtLink to="/"><span class="text-3xl font-bold text-green-400">ortzschestrate</span></NuxtLink>
 
-      <div class="relative">
-        <UserButton />
+      <div class="relative flex flex-row">
+         <WalletButton v-if="userStore.user" /> 
+
+        <UserButton class="ml-2" />
       </div>
     </div>
   </header>

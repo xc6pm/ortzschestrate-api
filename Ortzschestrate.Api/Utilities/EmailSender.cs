@@ -1,3 +1,4 @@
+using System.Net;
 using MailKit.Net.Smtp;
 using MimeKit;
 using MimeKit.Text;
@@ -30,33 +31,14 @@ public class EmailSender
             Text = body
         };
 
-        using (var client = new SmtpClient())
-        {
-            client.Connect("smtp.gmail.com", 465, true);
+        using var client = new SmtpClient();
+        await client.ConnectAsync("out.dnsexit.com", 587, false);
 
-            // Note: only needed if the SMTP server requires authentication
-            client.Authenticate(emailAddress, emailPassword);
+        // Note: only needed if the SMTP server requires authentication
+        await client.AuthenticateAsync(new NetworkCredential(emailAddress, emailPassword));
 
-            string res = await client.SendAsync(message);
-            await client.DisconnectAsync(false);
-            return res;
-        }
-
-        // Set up SMTP client
-        // SmtpClient client = new SmtpClient("smtp.gmail.com", 465);
-        // client.EnableSsl = true;
-        // client.UseDefaultCredentials = false;
-        // client.Credentials = new NetworkCredential(emailAddress, emailPassword);
-        //
-        // // Create email message
-        // MailMessage mailMessage = new MailMessage();
-        // mailMessage.From = new MailAddress(emailAddress, emailSender);
-        // mailMessage.To.Add(toEmail);
-        // mailMessage.Subject = subject;
-        // mailMessage.IsBodyHtml = true;
-        // mailMessage.Body = body;
-        //
-        // // Send email
-        // client.Send(mailMessage);
+        string res = await client.SendAsync(message);
+        await client.DisconnectAsync(false);
+        return res;
     }
 }

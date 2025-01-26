@@ -102,7 +102,7 @@ public class AuthController : ControllerBase
     public async Task<IResult> GetUserInfoAsync([FromServices] UserManager<User> userManager)
     {
         var user = await userManager.FindByIdAsync(HttpContext.User.FindId());
-        return Results.Ok(new { user!.Id, user.UserName, user.Email });
+        return Results.Ok(new { user!.Id, user.UserName, user.Email, VerifiedWallet = user.WalletAddress });
     }
 
     [HttpPost]

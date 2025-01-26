@@ -11,8 +11,12 @@
   },
   "dependencies": {
     "@microsoft/signalr": "^8.0.7",
+    "@nuxt/icon": "^1.10.3",
     "@nuxt/ui": "^2.19.2",
     "@pinia/nuxt": "^0.7.0",
+    "@vue-dapp/core": "^1.5.1",
+    "@vue-dapp/modal": "^1.5.1",
+    "@vue-dapp/nuxt": "^1.5.1",
     "nuxt": "^3.13.0",
     "vue": "latest",
     "vue-router": "latest",

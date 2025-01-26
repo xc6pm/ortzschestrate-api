@@ -1,4 +1,5 @@
 using Nethereum.Hex.HexConvertors.Extensions;
+using Nethereum.Util;
 
 namespace Ortzschestrate.Web3.Utilities;
 
@@ -8,7 +9,7 @@ public class Validator
     {
         return !string.IsNullOrWhiteSpace(address) &&
                address.HasHexPrefix() &&
-               address.Length == 40 &&
+               address.IsValidEthereumAddressLength() &&
                address.IsHex();
     }
 }

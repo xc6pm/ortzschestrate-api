@@ -33,6 +33,10 @@
     <Content Remove="$(SpaRoot)**" />
     <None Remove="$(SpaRoot)**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+    <Content Remove="client-app\**" />
+    <None Remove="client-app\**" />
+    <Content Remove="obj\**" />
+    <None Remove="obj\**" />
   </ItemGroup>
 
    <ItemGroup>
@@ -44,6 +48,23 @@
 
    <ItemGroup>
      <Folder Include="Business\" />
+   </ItemGroup>
+
+   <ItemGroup>
+     <Compile Remove="client-app\**" />
+     <Compile Remove="obj\**" />
+   </ItemGroup>
+
+   <ItemGroup>
+     <EmbeddedResource Remove="client-app\**" />
+     <EmbeddedResource Remove="obj\**" />
+   </ItemGroup>
+
+   <ItemGroup>
+     <_ContentIncludedByDefault Remove="client-app\package-lock.json" />
+     <_ContentIncludedByDefault Remove="client-app\package.json" />
+     <_ContentIncludedByDefault Remove="client-app\server\tsconfig.json" />
+     <_ContentIncludedByDefault Remove="client-app\tsconfig.json" />
    </ItemGroup>
 
 	<!-- Spa configuration -->

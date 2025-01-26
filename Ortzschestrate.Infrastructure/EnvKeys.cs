@@ -13,7 +13,7 @@ public static class EnvKeys
     // Web3
     public const string PrivateKey = "ORTZSCHESTRATE_PRIVATE_KEY";
     public const string ChainUrl = "ORTZSCHESTRATE_CHAIN_URL";
-    public const string ContractAddress = "ORTZsCHESTRATE_CONTRACT_ADDRESS";
+    public const string ContractAddress = "ORTZSCHESTRATE_CONTRACT_ADDRESS";
 
 
     // Email
