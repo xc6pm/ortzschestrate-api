@@ -5,7 +5,7 @@ namespace Ortzschestrate.Data.Models
 {
     public class User : IdentityUser
     {
-        [StringLength(40)] public string UnverifiedWalletAddress { get; set; }
-        [StringLength(40)] public string WalletAddress { get; set; }
+        [StringLength(42)] public string? UnverifiedWalletAddress { get; set; }
+        [StringLength(42)] public string? WalletAddress { get; set; }
     }
 }

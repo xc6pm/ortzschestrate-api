@@ -42,7 +42,7 @@ const verifyWallet = async () => {
     return
   }
 
-  toast.add({ description: "A link containing the verification link has been sent to your email", color: "yellow" })
+  toast.add({ title: "Check your email", description: "A link containing the verification link has been sent to your email", color: "yellow" })
 }
 
 const dropDownItems = computed(() => {
@@ -65,7 +65,7 @@ function connectToggleClicked() {
 <template>
   <UButtonGroup size="sm" orientation="horizontal">
     <UButton @click="connectToggleClicked" color="oxford-blue">
-      <UTooltip :text="isConnected ? 'Click to disconnect' : ''">
+      <UTooltip :text="isConnected ? `${isWalletVerified ? 'Verified &#9679 ' : ''} Click to disconnect` : ''">
         <span v-if="isConnected" class="align-middle justify-center"
           >{{ wallet.address!.slice(0, 7) }}...{{
             wallet.address!.slice(wallet.address!.length - 5, wallet.address!.length)

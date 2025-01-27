@@ -26,16 +26,18 @@ public class WalletController : ControllerBase
         var userId = HttpContext.User.FindId();
         var user = (await dbContext.Users.FindAsync(userId))!;
         user.UnverifiedWalletAddress = walletAddress;
+        await dbContext.SaveChangesAsync();
 
         var token = await generateWalletVerificationTokenAsync(userManager, user);
-        var link = Url.Action(nameof(Confirm), new { token, email = user.Email });
+        var link = Url.ActionLink(nameof(Confirm), null, new { token, email = user.Email });
 
         await emailSender.SendWalletVerificationEmailAsync(user.Email!, link!);
         return Results.Ok();
     }
 
     [HttpGet]
-    public async Task<IResult> Confirm(string token, string email, [FromServices] UserManager<User> userManager)
+    public async Task<IResult> Confirm(string token, string email, [FromServices] UserManager<User> userManager,
+        [FromServices] DbContext dbContext)
     {
         var user = await userManager.FindByEmailAsync(email);
         if (user == null)
@@ -46,6 +48,11 @@ public class WalletController : ControllerBase
 
         if (!verified)
             return Results.BadRequest("Wallet verification failed. Try another time.");
+
+        var userInDb = await dbContext.Users.FindAsync(user.Id);
+        userInDb!.WalletAddress = user.UnverifiedWalletAddress;
+        userInDb.UnverifiedWalletAddress = string.Empty;
+        await dbContext.SaveChangesAsync();
 
         return Results.Ok();
     }
