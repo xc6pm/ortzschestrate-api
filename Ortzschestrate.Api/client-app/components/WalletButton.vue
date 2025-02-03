@@ -45,16 +45,6 @@ const verifyWallet = async () => {
   toast.add({ title: "Check your email", description: "A link containing the verification link has been sent to your email", color: "yellow" })
 }
 
-const dropDownItems = computed(() => {
-  if (isConnected) {
-    const walletButtons = []
-    if (wallet.address !== userStore.user!.verifiedWallet) walletButtons.push({ label: "verify", click: verifyWallet })
-
-    walletButtons.push({ label: "disconnect", click: disconnect })
-
-    return [walletButtons]
-  }
-})
 
 function connectToggleClicked() {
   if (isConnected.value) disconnect()
