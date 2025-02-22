@@ -37,8 +37,6 @@ const deposit = () => {}
 
 const withdraw = () => {}
 
-const disconnect = () => {}
-
 const dropdownItems = [
   [
     {
@@ -46,7 +44,12 @@ const dropdownItems = [
       click: deposit,
     },
     { label: "withdraw", click: withdraw },
-    { label: "disconnect", click: disconnect },
+    {
+      label: "disconnect",
+      click: () => {
+        wagmiAdapter.disconnect()
+      },
+    },
   ],
 ]
 </script>

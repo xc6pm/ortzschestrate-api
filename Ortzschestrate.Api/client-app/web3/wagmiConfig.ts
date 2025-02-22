@@ -1,6 +1,6 @@
 import { defineChain, type AppKitNetwork } from "@reown/appkit/networks"
 import { http, createConfig } from "@wagmi/vue"
-import { hardhat, sepolia } from "@wagmi/vue/chains"
+import { sepolia } from "@wagmi/vue/chains"
 
 const hardhatLocalhost = defineChain({
   id: 31_337,
@@ -22,7 +22,7 @@ const config = createConfig({
   chains: [sepolia, hardhatLocalhost],
   transports: {
     [sepolia.id]: http(),
-    [hardhat.id]: http(),
+    [hardhatLocalhost.id]: http(),
   },
 })
 
