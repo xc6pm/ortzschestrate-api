@@ -44,6 +44,33 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
         public virtual byte[] ReturnValue1 { get; set; }
     }
 
+    public partial class GetBalanceFunction : GetBalanceFunctionBase { }
+
+    [Function("getBalance", "uint256")]
+    public class GetBalanceFunctionBase : FunctionMessage
+    {
+        [Parameter("address", "_userAddress", 1)]
+        public virtual string UserAddress { get; set; }
+    }
+
+    public partial class GetGameFunction : GetGameFunctionBase { }
+
+    [Function("getGame", typeof(GetGameOutputDTO))]
+    public class GetGameFunctionBase : FunctionMessage
+    {
+        [Parameter("bytes32", "_gameId", 1)]
+        public virtual byte[] GameId { get; set; }
+    }
+
+    public partial class GetLockedStakeFunction : GetLockedStakeFunctionBase { }
+
+    [Function("getLockedStake", "uint256")]
+    public class GetLockedStakeFunctionBase : FunctionMessage
+    {
+        [Parameter("address", "_userAddress", 1)]
+        public virtual string UserAddress { get; set; }
+    }
+
     public partial class LockedStakesFunction : LockedStakesFunctionBase { }
 
     [Function("lockedStakes", "uint256")]
@@ -236,6 +263,33 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
         public virtual BigInteger StakeAmount { get; set; }
         [Parameter("bool", "active", 4)]
         public virtual bool Active { get; set; }
+    }
+
+    public partial class GetBalanceOutputDTO : GetBalanceOutputDTOBase { }
+
+    [FunctionOutput]
+    public class GetBalanceOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("uint256", "", 1)]
+        public virtual BigInteger ReturnValue1 { get; set; }
+    }
+
+    public partial class GetGameOutputDTO : GetGameOutputDTOBase { }
+
+    [FunctionOutput]
+    public class GetGameOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("tuple", "", 1)]
+        public virtual Game ReturnValue1 { get; set; }
+    }
+
+    public partial class GetLockedStakeOutputDTO : GetLockedStakeOutputDTOBase { }
+
+    [FunctionOutput]
+    public class GetLockedStakeOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("uint256", "", 1)]
+        public virtual BigInteger ReturnValue1 { get; set; }
     }
 
     public partial class LockedStakesOutputDTO : LockedStakesOutputDTOBase { }

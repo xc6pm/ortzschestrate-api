@@ -79,6 +79,47 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet
             return ContractHandler.QueryDeserializingToObjectAsync<GamesFunction, GamesOutputDTO>(gamesFunction, blockParameter);
         }
 
+        public Task<BigInteger> GetBalanceQueryAsync(GetBalanceFunction getBalanceFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<GetBalanceFunction, BigInteger>(getBalanceFunction, blockParameter);
+        }
+
+        
+        public virtual Task<BigInteger> GetBalanceQueryAsync(string userAddress, BlockParameter blockParameter = null)
+        {
+            var getBalanceFunction = new GetBalanceFunction();
+                getBalanceFunction.UserAddress = userAddress;
+            
+            return ContractHandler.QueryAsync<GetBalanceFunction, BigInteger>(getBalanceFunction, blockParameter);
+        }
+
+        public virtual Task<GetGameOutputDTO> GetGameQueryAsync(GetGameFunction getGameFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryDeserializingToObjectAsync<GetGameFunction, GetGameOutputDTO>(getGameFunction, blockParameter);
+        }
+
+        public virtual Task<GetGameOutputDTO> GetGameQueryAsync(byte[] gameId, BlockParameter blockParameter = null)
+        {
+            var getGameFunction = new GetGameFunction();
+                getGameFunction.GameId = gameId;
+            
+            return ContractHandler.QueryDeserializingToObjectAsync<GetGameFunction, GetGameOutputDTO>(getGameFunction, blockParameter);
+        }
+
+        public Task<BigInteger> GetLockedStakeQueryAsync(GetLockedStakeFunction getLockedStakeFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<GetLockedStakeFunction, BigInteger>(getLockedStakeFunction, blockParameter);
+        }
+
+        
+        public virtual Task<BigInteger> GetLockedStakeQueryAsync(string userAddress, BlockParameter blockParameter = null)
+        {
+            var getLockedStakeFunction = new GetLockedStakeFunction();
+                getLockedStakeFunction.UserAddress = userAddress;
+            
+            return ContractHandler.QueryAsync<GetLockedStakeFunction, BigInteger>(getLockedStakeFunction, blockParameter);
+        }
+
         public Task<BigInteger> LockedStakesQueryAsync(LockedStakesFunction lockedStakesFunction, BlockParameter blockParameter = null)
         {
             return ContractHandler.QueryAsync<LockedStakesFunction, BigInteger>(lockedStakesFunction, blockParameter);
@@ -256,6 +297,9 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet
             {
                 typeof(DepositStakesFunction),
                 typeof(GamesFunction),
+                typeof(GetBalanceFunction),
+                typeof(GetGameFunction),
+                typeof(GetLockedStakeFunction),
                 typeof(LockedStakesFunction),
                 typeof(OwnerFunction),
                 typeof(RenounceOwnershipFunction),

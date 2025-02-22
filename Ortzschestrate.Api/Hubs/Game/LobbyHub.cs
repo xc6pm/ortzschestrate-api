@@ -1,3 +1,4 @@
+using System.Numerics;
 using Chess;
 using Microsoft.AspNetCore.SignalR;
 using Ortzschestrate.Api.Models;
@@ -7,7 +8,7 @@ namespace Ortzschestrate.Api.Hubs;
 public partial class GameHub
 {
     [HubMethodName("create")]
-    public async Task CreateGameAsync(int time, char creatorColor)
+    public async Task CreateGameAsync(int time, char creatorColor, BigInteger stakeAmount)
     {
         if (!GameType.TryFromValue(time, out GameType timeLimit))
             throw new HubException("The gameType argument is invalid.");
@@ -29,7 +30,7 @@ public partial class GameHub
             }
 
             _pendingGamesByCreatorId.TryAdd(player.UserId,
-                new PendingGame(player, timeLimit, color));
+                new PendingGame(player, timeLimit, color, stakeAmount));
         }
         finally
         {
@@ -59,6 +60,7 @@ public partial class GameHub
         if (removedAnything)
             await Clients.All.LobbyUpdated(_pendingGamesByCreatorId.Values.ToList());
     }
+    
 
     [HubMethodName("join")]
     // Checks for:
