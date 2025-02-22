@@ -14,6 +14,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiUrl: process.env.NUXT_API_URL,
+      reownProjectId: process.env.REOWN_PROJECT_ID
     },
   },
 
@@ -26,10 +27,24 @@ export default defineNuxtConfig({
     },
   },
 
+  vite: {
+    optimizeDeps: {
+      // https://github.com/wevm/wagmi/issues/3977
+      include: ["eventemitter3"],
+    },
+  },
+
   ui: {
     safelistColors: ["oxford-blue", "fiord"],
   },
 
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => ["appkit-connect-button"].includes(tag),
+    },
+  },
+
   ssr: false,
-  modules: ["@pinia/nuxt", "@nuxt/ui", "@vue-dapp/nuxt", "@nuxt/icon"],
+  plugins: ["~/plugins/connectWallet.client.ts"],
+  modules: ["@pinia/nuxt", "@nuxt/ui", "@nuxt/icon"],
 })
