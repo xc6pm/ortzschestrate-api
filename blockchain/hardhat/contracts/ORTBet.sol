@@ -132,4 +132,18 @@ contract ORTBet is Ownable {
     receive() external payable {
         revert("Direct deposits not allowed.");
     }
+
+    function getBalance(address _userAddress) external view returns (uint256) {
+        return userBalances[_userAddress];
+    }
+
+    function getLockedStake(
+        address _userAddress
+    ) external view returns (uint256) {
+        return lockedStakes[_userAddress];
+    }
+
+    function getGame(bytes32 _gameId) external view returns (Game memory) {
+        return games[_gameId];
+    }
 }
