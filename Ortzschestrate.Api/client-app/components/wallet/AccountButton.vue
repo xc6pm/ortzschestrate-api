@@ -1,21 +1,23 @@
 <script setup lang="ts">
-import { useAccount } from "@wagmi/vue"
+import { useAccount, useWriteContract } from "@wagmi/vue"
 import { readContract } from "@wagmi/core"
 import { config } from "~/web3/wagmiConfig"
-import { formatEther } from "viem"
+import { formatEther, parseEther, type Abi } from "viem"
+import type { FormError } from "@nuxt/ui/dist/runtime/types"
 
 const account = useAccount()
 if (!account.isConnected.value) throw new Error("The account must be connected for this component.")
 
 const stakesInContract = ref("0")
+const { getDeployment } = useDeploymentStore()
 
 const readBalance = async () => {
   if (!account?.address?.value) return
 
-  const deployment = await $fetch<any>("/deployment/ORTBet.json")
+  const deployment = await getDeployment()
 
   const data = await readContract(config, {
-    abi: deployment.abi,
+    abi: deployment.abi as Abi,
     address: deployment.address,
     functionName: "getBalance",
     args: [account.address.value],
@@ -33,9 +35,41 @@ wagmiAdapter.on("accountChanged", async (arg) => {
 
 readBalance()
 
-const deposit = () => {}
+const { writeContract } = useWriteContract({})
+const isModalOpen = ref(false)
+const modalState = reactive({
+  amount: 0,
+})
+let isDepositModal = true
+
+const deposit = async () => {
+  modalState.amount = 0
+  isDepositModal = true
+  isModalOpen.value = true
+}
 
 const withdraw = () => {}
+
+const amountEntered = async () => {
+  if (errors.value.length) {
+    return
+  }
+
+  const deployment = await getDeployment()
+
+  if (isDepositModal) {
+    await writeContract({
+      address: deployment.address,
+      value: parseEther(modalState.amount.toString()),
+      abi: deployment.abi,
+      functionName: "depositStakes",
+      args: [],
+    })
+  } else {
+  }
+
+  isModalOpen.value = false
+}
 
 const dropdownItems = [
   [
@@ -52,6 +86,16 @@ const dropdownItems = [
     },
   ],
 ]
+
+const errors = ref<FormError[]>([])
+const validate = (state: { amount: number }): FormError[] => {
+  const minimumAmount = 0.0001
+  if (state.amount < minimumAmount) errors.value = [{ path: "amount", message: `The minimum is ${minimumAmount} ETH.` }]
+  else errors.value = []
+  return errors.value
+}
+
+validate(modalState)
 </script>
 
 <template>
@@ -63,4 +107,16 @@ const dropdownItems = [
       ({{ stakesInContract }} ETH)
     </UButton>
   </UDropdown>
+
+  <UModal v-model="isModalOpen">
+    <UCard>
+      <UForm :state="modalState" :validate="validate">
+        <UFormGroup label="Amount" name="amount">
+          <UInput v-model="modalState.amount" type="number" />
+        </UFormGroup>
+        <UButton type="submit" @click="amountEntered" block class="mt-3"> Submit </UButton>
+        <UButton type="cancel" @click="() => (isModalOpen = false)" block class="mt-3" color="white"> Cancel </UButton>
+      </UForm>
+    </UCard>
+  </UModal>
 </template>

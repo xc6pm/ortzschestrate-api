@@ -485,3 +485,7 @@ $RECYCLE.BIN/
 
 
 *.pem
+
+
+Ortzschestrate.Api/client-app/public/deployment/*
+blockchain/hardhat/deployments/localhost/*

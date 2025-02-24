@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import UserButton from "~/components/auth/UserButton.vue"
-import WalletButton from "~/components/wallet/Button.vue"
+import WalletButton from "~/components/wallet/WalletButton.vue"
 
 const userStore = useUserStore()
 </script>

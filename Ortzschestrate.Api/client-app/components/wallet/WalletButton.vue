@@ -53,6 +53,6 @@ const modal = createAppKit({
 </script>
 
 <template>
-  <appkit-connect-button v-if="!account.isConnected.value" size="sm" color="fiord" />
+  <appkit-connect-button v-if="!account.isConnected.value" size="sm" color="oxford-blue" />
   <AccountButton v-else />
 </template>

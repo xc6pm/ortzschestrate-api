@@ -21,7 +21,7 @@ const createGame = async () => {
 
 <template>
   <UCard :ui="{ body: { padding: 'p-3' }, strategy: 'override' }">
-    <h2 class="text-lg text-center">Setup a table</h2>
+    <h2 class="text-lg text-center">Setup a board</h2>
     <UForm :state="newGame" @submit.prevent="createGame">
       <UFormGroup label="Game Type:" class="my-3">
         <USelectMenu
