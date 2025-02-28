@@ -9,9 +9,6 @@ console.log("connected", account.isConnected.value)
 
 const { wagmiAdapter, projectId } = useWagmi()
 
-wagmiAdapter.on("connectors", (arg) => {
-  console.log("connectors", arg)
-})
 wagmiAdapter.on("disconnect", (arg) => {
   console.log("disconnect", arg)
 })

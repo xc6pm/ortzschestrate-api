@@ -42,14 +42,6 @@ const modalState = reactive({
 })
 let isDepositModal = true
 
-const deposit = async () => {
-  modalState.amount = 0
-  isDepositModal = true
-  isModalOpen.value = true
-}
-
-const withdraw = () => {}
-
 const amountEntered = async () => {
   if (errors.value.length) {
     return
@@ -58,7 +50,7 @@ const amountEntered = async () => {
   const deployment = await getDeployment()
 
   if (isDepositModal) {
-    await writeContract({
+    writeContract({
       address: deployment.address,
       value: parseEther(modalState.amount.toString()),
       abi: deployment.abi,
@@ -66,6 +58,12 @@ const amountEntered = async () => {
       args: [],
     })
   } else {
+    writeContract({
+      address: deployment.address,
+      abi: deployment.abi,
+      functionName: "withdrawStakes",
+      args: [parseEther(modalState.amount.toString())],
+    })
   }
 
   isModalOpen.value = false
@@ -75,9 +73,20 @@ const dropdownItems = [
   [
     {
       label: "deposit",
-      click: deposit,
+      click: () => {
+        modalState.amount = 0
+        isDepositModal = true
+        isModalOpen.value = true
+      },
     },
-    { label: "withdraw", click: withdraw },
+    {
+      label: "withdraw",
+      click: () => {
+        modalState.amount = 0
+        isDepositModal = false
+        isModalOpen.value = true
+      },
+    },
     {
       label: "disconnect",
       click: () => {
