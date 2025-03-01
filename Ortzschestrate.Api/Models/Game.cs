@@ -15,7 +15,7 @@ public class Game
         Player2 = player2;
         Player1Color = pendingGame.CreatorColor;
         Player2Color = Player1Color == PieceColor.White ? PieceColor.Black : PieceColor.White;
-        StakeAmount = pendingGame.StakeAmount;
+        StakeEth = pendingGame.StakeEth;
         GameType = pendingGame.GameType;
         Id = Guid.NewGuid();
         StartedTime = _lastMoveTime = DateTime.UtcNow;
@@ -28,7 +28,7 @@ public class Game
     public Player Player2 { get; }
     public PieceColor Player1Color { get; }
     public PieceColor Player2Color { get; }
-    public BigInteger StakeAmount { get; }
+    public double StakeEth { get; }
     public GameType GameType { get; }
     public DateTime StartedTime { get; }
     public TimeSpan Player1RemainingTime { get; private set; }

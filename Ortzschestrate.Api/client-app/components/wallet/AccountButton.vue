@@ -1,39 +1,22 @@
 <script setup lang="ts">
 import { useAccount, useWriteContract } from "@wagmi/vue"
-import { readContract } from "@wagmi/core"
-import { config } from "~/web3/wagmiConfig"
-import { formatEther, parseEther, type Abi } from "viem"
+import { parseEther } from "viem"
 import type { FormError } from "@nuxt/ui/dist/runtime/types"
+import { useContractStateStore } from "~/stores/contractState"
 
 const account = useAccount()
 if (!account.isConnected.value) throw new Error("The account must be connected for this component.")
 
-const stakesInContract = ref("0")
-const { getDeployment } = useDeploymentStore()
-
-const readBalance = async () => {
-  if (!account?.address?.value) return
-
-  const deployment = await getDeployment()
-
-  const data = await readContract(config, {
-    abi: deployment.abi as Abi,
-    address: deployment.address,
-    functionName: "getBalance",
-    args: [account.address.value],
-  })
-
-  stakesInContract.value = formatEther(data as bigint)
-}
+const contractState = useContractStateStore()
 
 const { wagmiAdapter } = useWagmi()
 
 wagmiAdapter.on("accountChanged", async (arg) => {
   console.log("accountChanged", arg)
-  await readBalance()
+  await contractState.updateBalance()
 })
 
-readBalance()
+contractState.updateBalance()
 
 const { writeContract } = useWriteContract({})
 const isModalOpen = ref(false)
@@ -47,7 +30,7 @@ const amountEntered = async () => {
     return
   }
 
-  const deployment = await getDeployment()
+  const deployment = await contractState.getDeployment()
 
   if (isDepositModal) {
     writeContract({
@@ -113,7 +96,7 @@ validate(modalState)
       {{ account.address.value?.substring(0, 5) }}...{{
         account.address.value?.substring(account.address.value.length - 4, account.address.value.length)
       }}
-      ({{ stakesInContract }} ETH)
+      ({{ contractState.stakesEth }} ETH)
     </UButton>
   </UDropdown>
 

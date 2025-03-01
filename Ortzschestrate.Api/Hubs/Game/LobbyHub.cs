@@ -8,7 +8,7 @@ namespace Ortzschestrate.Api.Hubs;
 public partial class GameHub
 {
     [HubMethodName("create")]
-    public async Task CreateGameAsync(int time, char creatorColor, BigInteger stakeAmount)
+    public async Task CreateGameAsync(int time, char creatorColor, double stakeEth)
     {
         if (!GameType.TryFromValue(time, out GameType timeLimit))
             throw new HubException("The gameType argument is invalid.");
@@ -30,7 +30,7 @@ public partial class GameHub
             }
 
             _pendingGamesByCreatorId.TryAdd(player.UserId,
-                new PendingGame(player, timeLimit, color, stakeAmount));
+                new PendingGame(player, timeLimit, color, stakeEth));
         }
         finally
         {
@@ -60,7 +60,7 @@ public partial class GameHub
         if (removedAnything)
             await Clients.All.LobbyUpdated(_pendingGamesByCreatorId.Values.ToList());
     }
-    
+
 
     [HubMethodName("join")]
     // Checks for:
