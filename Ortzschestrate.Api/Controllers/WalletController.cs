@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Ortzschestrate.Api.Security;
 using Ortzschestrate.Api.Utilities;
 using Ortzschestrate.Data.Models;
+using Ortzschestrate.Infrastructure;
 using Ortzschestrate.Web3.Utilities;
 using DbContext = Ortzschestrate.Data.DbContext;
 
@@ -25,6 +26,15 @@ public class WalletController : ControllerBase
 
         var userId = HttpContext.User.FindId();
         var user = (await dbContext.Users.FindAsync(userId))!;
+
+        var disableWalletVerification = Environment.GetEnvironmentVariable(EnvKeys.DisableWalletVerification);
+        if (disableWalletVerification != null && int.Parse(disableWalletVerification) == 1)
+        {
+            user.WalletAddress = walletAddress;
+            await dbContext.SaveChangesAsync();
+            return Results.Ok();
+        }
+
         user.UnverifiedWalletAddress = walletAddress;
         await dbContext.SaveChangesAsync();
 
