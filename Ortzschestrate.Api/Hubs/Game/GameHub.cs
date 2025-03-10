@@ -62,7 +62,7 @@ public partial class GameHub
 
         if (game.EndGame != null)
         {
-            await disconnectEndedGameAsync(game);
+            await finalizeEndedGameAsync(game);
         }
     }
 
@@ -73,13 +73,13 @@ public partial class GameHub
 
         if (game.IsPlayer1OutOfTime())
         {
-            await disconnectEndedGameAsync(game);
+            await finalizeEndedGameAsync(game);
             return true;
         }
 
         if (game.IsPlayer2OutOfTime())
         {
-            await disconnectEndedGameAsync(game);
+            await finalizeEndedGameAsync(game);
             return true;
         }
 

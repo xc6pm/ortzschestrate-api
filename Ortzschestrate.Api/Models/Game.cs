@@ -29,6 +29,7 @@ public class Game
     public PieceColor Player1Color { get; }
     public PieceColor Player2Color { get; }
     public double StakeEth { get; }
+    public bool IsWagered => StakeEth > 0;
     public GameType GameType { get; }
     public DateTime StartedTime { get; }
     public TimeSpan Player1RemainingTime { get; private set; }

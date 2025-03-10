@@ -1,5 +1,4 @@
 using Nethereum.RPC.Eth.DTOs;
-using Newtonsoft.Json.Linq;
 using Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition;
 using Ortzschestrate.Web3.Utilities;
 
@@ -21,23 +20,10 @@ public class StartGame
         };
 
         var handler = web3.Eth.GetContractTransactionHandler<StartGameFunction>();
-        var contractAddress = await readDeployedContractAddressAsync();
+        var contractAddress = await Deployment.ReadContractAddressAsync();
 
         var receipt = await handler.SendRequestAndWaitForReceiptAsync(contractAddress, startGameFunction);
 
         return receipt.Succeeded();
-    }
-
-    private async Task<string> readDeployedContractAddressAsync()
-    {
-        string dev = "";
-#if DEBUG
-        dev = "dev";
-#endif
-
-        var deploymentPath = $"../Ortzschestrate.Web3/deployment/{dev}/ORTBet.json";
-        var content = await File.ReadAllTextAsync(deploymentPath);
-        var jObject = JObject.Parse(content);
-        return jObject["address"].ToString();
     }
 }
