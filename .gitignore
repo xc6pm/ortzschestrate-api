@@ -487,5 +487,4 @@ $RECYCLE.BIN/
 *.pem
 
 
-Ortzschestrate.Api/client-app/public/deployment/*
-blockchain/hardhat/deployments/localhost/*
+Ortzschestrate.Web3/deployment/dev/

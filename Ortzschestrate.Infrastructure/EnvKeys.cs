@@ -20,4 +20,7 @@ public static class EnvKeys
     public const string MailSender = "ORTZSCHESTRATE_MAIL_SENDER";
     public const string MailAddress = "ORTZSCHESTRATE_MAIL_ADDRESS";
     public const string MailPassword = "ORTZSCHESTRATE_MAIL_PASSWORD";
+    
+    
+    public const string DisableWalletVerification = "ORTZSCHESTRATE_DISABLE_WALLET_VERIFICATION";
 }

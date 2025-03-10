@@ -1,9 +1,12 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Ortzschestrate.Api.Hubs.Game;
 using Ortzschestrate.Api.Models;
+using Ortzschestrate.Data.Models;
+using Ortzschestrate.Web3.Actions;
 
 namespace Ortzschestrate.Api.Hubs;
 
@@ -14,10 +17,14 @@ public partial class GameHub : Hub<IGameClient>
     private static readonly ConcurrentDictionary<Guid, Models.Game> _ongoingShortGames = new();
     private static readonly SemaphoreSlim _lobbySemaphore = new(1, 1);
     private readonly PlayerCache _playerCache;
+    private readonly StartGame _startGame;
+    private readonly UserManager<User> _userManager;
 
-    public GameHub(PlayerCache playerCache)
+    public GameHub(PlayerCache playerCache, StartGame startGame, UserManager<User> userManager)
     {
         _playerCache = playerCache;
+        _startGame = startGame;
+        _userManager = userManager;
     }
 
     public override async Task OnConnectedAsync()

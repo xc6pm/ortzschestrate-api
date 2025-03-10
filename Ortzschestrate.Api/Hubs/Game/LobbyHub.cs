@@ -1,10 +1,12 @@
-using System.Numerics;
 using Chess;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Ortzschestrate.Api.Models;
 
 namespace Ortzschestrate.Api.Hubs;
 
+[Authorize]
 public partial class GameHub
 {
     [HubMethodName("create")]
@@ -12,6 +14,15 @@ public partial class GameHub
     {
         if (!GameType.TryFromValue(time, out GameType timeLimit))
             throw new HubException("The gameType argument is invalid.");
+
+        if (stakeEth > 0)
+        {
+            var user = await _userManager.FindByIdAsync(Context.UserIdentifier!);
+            if (String.IsNullOrEmpty(user.WalletAddress))
+            {
+                throw new HubException("You need a verified wallet address to start a wagered game.");
+            }
+        }
 
         var color = creatorColor switch
         {
@@ -75,12 +86,31 @@ public partial class GameHub
             throw new HubException("Can't join your own game.");
         }
 
+        bool wageredGame = _pendingGamesByCreatorId.TryGetValue(creatorId, out var g) && g.StakeEth > 0;
+        string? player1Address = null, player2Address = null;
+        if (wageredGame)
+        {
+            var players = await _userManager.Users
+                .Where(u => u.Id == creatorId || u.Id == Context.UserIdentifier!)
+                .Take(2).ToListAsync();
+            player1Address = players.First(p => p.Id == creatorId).WalletAddress!;
+            player2Address = players.First(p => p.Id == Context.UserIdentifier!).WalletAddress;
+
+            if (String.IsNullOrEmpty(player2Address))
+            {
+                throw new HubException("You need a verified wallet address to join a wagered game.");
+            }
+        }
+
+
         Models.Game? startingGame = null;
         await _lobbySemaphore.WaitAsync();
+        PendingGame pendingGame = null;
+        Player? player1 = null, player2 = null;
         try
         {
-            var player1 = _playerCache.GetPlayer(creatorId);
-            var player2 = _playerCache.GetPlayer(Context.UserIdentifier!);
+            player1 = _playerCache.GetPlayer(creatorId);
+            player2 = _playerCache.GetPlayer(Context.UserIdentifier!);
             if (_pendingGamesByCreatorId.ContainsKey(Context.UserIdentifier!))
             {
                 throw new HubException("Cancel the game you created first.");
@@ -91,7 +121,7 @@ public partial class GameHub
                 throw new HubException("You're already playing a game. Finish that first.");
             }
 
-            if (_pendingGamesByCreatorId.TryRemove(creatorId, out var pendingGame))
+            if (_pendingGamesByCreatorId.TryRemove(creatorId, out pendingGame))
             {
                 startingGame = new Models.Game(pendingGame, player2);
                 player1.OngoingShortGame = startingGame;
@@ -107,9 +137,26 @@ public partial class GameHub
         finally
         {
             _lobbySemaphore.Release();
+
             // Want to execute these tasks outside the semaphore and before the return.
             if (startingGame != null)
             {
+                if (wageredGame)
+                {
+                    var gameStartedOnBlockchain = await _startGame.DoAsync(startingGame.Id, player1Address!,
+                        player2Address!,
+                        startingGame.StakeEth);
+
+                    if (!gameStartedOnBlockchain)
+                    {
+                        player1!.OngoingShortGame = null;
+                        player2!.OngoingShortGame = null;
+                        _ongoingShortGames.TryRemove(startingGame.Id, out _);
+                        _pendingGamesByCreatorId.TryAdd(creatorId, pendingGame!);
+                        throw new HubException("Reverted due to Blockchain error.");
+                    }
+                }
+
                 await Clients.All.LobbyUpdated(_pendingGamesByCreatorId.Values.ToList());
                 await Clients.User(startingGame.Player1.UserId)
                     .GameStarted(startingGame.Id.ToString());

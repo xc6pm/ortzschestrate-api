@@ -27,10 +27,35 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
 
     }
 
+    public partial class CalculateFeeFunction : CalculateFeeFunctionBase { }
+
+    [Function("calculateFee", "uint256")]
+    public class CalculateFeeFunctionBase : FunctionMessage
+    {
+        [Parameter("uint256", "_amount", 1)]
+        public virtual BigInteger Amount { get; set; }
+    }
+
     public partial class DepositStakesFunction : DepositStakesFunctionBase { }
 
     [Function("depositStakes")]
     public class DepositStakesFunctionBase : FunctionMessage
+    {
+
+    }
+
+    public partial class FeeRateFunction : FeeRateFunctionBase { }
+
+    [Function("feeRate", "uint256")]
+    public class FeeRateFunctionBase : FunctionMessage
+    {
+
+    }
+
+    public partial class FeesCollectedFunction : FeesCollectedFunctionBase { }
+
+    [Function("feesCollected", "uint256")]
+    public class FeesCollectedFunctionBase : FunctionMessage
     {
 
     }
@@ -138,6 +163,15 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
     {
         [Parameter("address", "", 1)]
         public virtual string ReturnValue1 { get; set; }
+    }
+
+    public partial class WithdrawFeesFunction : WithdrawFeesFunctionBase { }
+
+    [Function("withdrawFees")]
+    public class WithdrawFeesFunctionBase : FunctionMessage
+    {
+        [Parameter("uint256", "_amount", 1)]
+        public virtual BigInteger Amount { get; set; }
     }
 
     public partial class WithdrawStakesFunction : WithdrawStakesFunctionBase { }
@@ -248,7 +282,34 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
         public virtual string Account { get; set; }
     }
 
+    public partial class CalculateFeeOutputDTO : CalculateFeeOutputDTOBase { }
 
+    [FunctionOutput]
+    public class CalculateFeeOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("uint256", "", 1)]
+        public virtual BigInteger ReturnValue1 { get; set; }
+    }
+
+
+
+    public partial class FeeRateOutputDTO : FeeRateOutputDTOBase { }
+
+    [FunctionOutput]
+    public class FeeRateOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("uint256", "", 1)]
+        public virtual BigInteger ReturnValue1 { get; set; }
+    }
+
+    public partial class FeesCollectedOutputDTO : FeesCollectedOutputDTOBase { }
+
+    [FunctionOutput]
+    public class FeesCollectedOutputDTOBase : IFunctionOutputDTO 
+    {
+        [Parameter("uint256", "", 1)]
+        public virtual BigInteger ReturnValue1 { get; set; }
+    }
 
     public partial class GamesOutputDTO : GamesOutputDTOBase { }
 
@@ -326,6 +387,8 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet.ContractDefinition
         [Parameter("uint256", "", 1)]
         public virtual BigInteger ReturnValue1 { get; set; }
     }
+
+
 
 
 }

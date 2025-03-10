@@ -46,6 +46,20 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet
         {
         }
 
+        public Task<BigInteger> CalculateFeeQueryAsync(CalculateFeeFunction calculateFeeFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<CalculateFeeFunction, BigInteger>(calculateFeeFunction, blockParameter);
+        }
+
+        
+        public virtual Task<BigInteger> CalculateFeeQueryAsync(BigInteger amount, BlockParameter blockParameter = null)
+        {
+            var calculateFeeFunction = new CalculateFeeFunction();
+                calculateFeeFunction.Amount = amount;
+            
+            return ContractHandler.QueryAsync<CalculateFeeFunction, BigInteger>(calculateFeeFunction, blockParameter);
+        }
+
         public virtual Task<string> DepositStakesRequestAsync(DepositStakesFunction depositStakesFunction)
         {
              return ContractHandler.SendRequestAsync(depositStakesFunction);
@@ -64,6 +78,28 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet
         public virtual Task<TransactionReceipt> DepositStakesRequestAndWaitForReceiptAsync(CancellationTokenSource cancellationToken = null)
         {
              return ContractHandler.SendRequestAndWaitForReceiptAsync<DepositStakesFunction>(null, cancellationToken);
+        }
+
+        public Task<BigInteger> FeeRateQueryAsync(FeeRateFunction feeRateFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<FeeRateFunction, BigInteger>(feeRateFunction, blockParameter);
+        }
+
+        
+        public virtual Task<BigInteger> FeeRateQueryAsync(BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<FeeRateFunction, BigInteger>(null, blockParameter);
+        }
+
+        public Task<BigInteger> FeesCollectedQueryAsync(FeesCollectedFunction feesCollectedFunction, BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<FeesCollectedFunction, BigInteger>(feesCollectedFunction, blockParameter);
+        }
+
+        
+        public virtual Task<BigInteger> FeesCollectedQueryAsync(BlockParameter blockParameter = null)
+        {
+            return ContractHandler.QueryAsync<FeesCollectedFunction, BigInteger>(null, blockParameter);
         }
 
         public virtual Task<GamesOutputDTO> GamesQueryAsync(GamesFunction gamesFunction, BlockParameter blockParameter = null)
@@ -265,6 +301,32 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet
             return ContractHandler.QueryAsync<UserBalancesFunction, BigInteger>(userBalancesFunction, blockParameter);
         }
 
+        public virtual Task<string> WithdrawFeesRequestAsync(WithdrawFeesFunction withdrawFeesFunction)
+        {
+             return ContractHandler.SendRequestAsync(withdrawFeesFunction);
+        }
+
+        public virtual Task<TransactionReceipt> WithdrawFeesRequestAndWaitForReceiptAsync(WithdrawFeesFunction withdrawFeesFunction, CancellationTokenSource cancellationToken = null)
+        {
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(withdrawFeesFunction, cancellationToken);
+        }
+
+        public virtual Task<string> WithdrawFeesRequestAsync(BigInteger amount)
+        {
+            var withdrawFeesFunction = new WithdrawFeesFunction();
+                withdrawFeesFunction.Amount = amount;
+            
+             return ContractHandler.SendRequestAsync(withdrawFeesFunction);
+        }
+
+        public virtual Task<TransactionReceipt> WithdrawFeesRequestAndWaitForReceiptAsync(BigInteger amount, CancellationTokenSource cancellationToken = null)
+        {
+            var withdrawFeesFunction = new WithdrawFeesFunction();
+                withdrawFeesFunction.Amount = amount;
+            
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(withdrawFeesFunction, cancellationToken);
+        }
+
         public virtual Task<string> WithdrawStakesRequestAsync(WithdrawStakesFunction withdrawStakesFunction)
         {
              return ContractHandler.SendRequestAsync(withdrawStakesFunction);
@@ -295,7 +357,10 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet
         {
             return new List<Type>
             {
+                typeof(CalculateFeeFunction),
                 typeof(DepositStakesFunction),
+                typeof(FeeRateFunction),
+                typeof(FeesCollectedFunction),
                 typeof(GamesFunction),
                 typeof(GetBalanceFunction),
                 typeof(GetGameFunction),
@@ -307,6 +372,7 @@ namespace Ortzschestrate.Web3.Contracts.ORTBet
                 typeof(StartGameFunction),
                 typeof(TransferOwnershipFunction),
                 typeof(UserBalancesFunction),
+                typeof(WithdrawFeesFunction),
                 typeof(WithdrawStakesFunction)
             };
         }

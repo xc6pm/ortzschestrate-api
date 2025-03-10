@@ -10,6 +10,7 @@ using Ortzschestrate.Api.Security;
 using Ortzschestrate.Api.Utilities;
 using Ortzschestrate.Data.Models;
 using Ortzschestrate.Infrastructure;
+using Ortzschestrate.Web3;
 using DbContext = Ortzschestrate.Data.DbContext;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -153,8 +154,9 @@ builder.Services.AddCors(options =>
 });
 
 
-    
 builder.Services.AddDataProtection();
+
+ServiceRegisterer.RegisterServices(builder.Services);
 
 builder.Services.AddTransient<WalletVerificationTokenProvider<User>>();
 
