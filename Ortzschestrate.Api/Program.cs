@@ -147,10 +147,14 @@ builder.Services.AddIdentityCore<User>(options =>
 builder.Services.AddSignalR();
 
 string devCorsPolicyName = "local dev client";
+string client = "client";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(devCorsPolicyName,
         builder => builder.WithOrigins("https://localhost:3000").AllowAnyHeader().AllowCredentials());
+    options.AddPolicy(client,
+        builder => builder.WithOrigins("https://ortzschestrate-bh1j46qfq-hosseins-projects-aaef31ca.vercel.app")
+            .AllowAnyHeader().AllowCredentials());
 });
 
 
@@ -180,6 +184,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
     app.UseCors(devCorsPolicyName);
+    app.UseCors(client);
 }
 
 
