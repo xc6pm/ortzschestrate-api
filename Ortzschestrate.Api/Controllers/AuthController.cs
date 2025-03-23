@@ -41,14 +41,18 @@ public class AuthController : ControllerBase
         // The user logged in with Google or something and has no password, we can't log in by username/password here
         if (user.PasswordHash == null)
         {
-            return Results.Unauthorized();
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                { "password", ["There's no password associated with that account."] }
+            });
         }
 
         if (passwordHasher.VerifyHashedPassword(
                 user, user.PasswordHash, creds.Password) ==
             PasswordVerificationResult.Failed)
         {
-            return Results.Unauthorized();
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+                { { "password", ["Incorrect password."] } });
         }
 
         authenticationHelper.AppendUserTokens(user.Id, Response);
