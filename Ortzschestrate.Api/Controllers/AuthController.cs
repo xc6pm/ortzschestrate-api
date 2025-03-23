@@ -20,7 +20,7 @@ public class AuthController : ControllerBase
         if ((String.IsNullOrWhiteSpace(creds.Email) && String.IsNullOrWhiteSpace(creds.Username)) ||
             String.IsNullOrWhiteSpace(creds.Password))
         {
-            return Results.BadRequest("All fields must have a value.");
+            return Results.Problem("All fields must have a value!");
         }
 
         User? user;
@@ -35,24 +35,20 @@ public class AuthController : ControllerBase
 
         if (user == null)
         {
-            return Results.NotFound("A user with this email/username doesn't exist; try registering first");
+            return Results.Problem("A user with this email/username doesn't exist; try registering first");
         }
 
         // The user logged in with Google or something and has no password, we can't log in by username/password here
         if (user.PasswordHash == null)
         {
-            return Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                { "password", ["There's no password associated with that account."] }
-            });
+            return Results.Problem("There's no password associated with that account.");
         }
 
         if (passwordHasher.VerifyHashedPassword(
                 user, user.PasswordHash, creds.Password) ==
             PasswordVerificationResult.Failed)
         {
-            return Results.ValidationProblem(new Dictionary<string, string[]>
-                { { "password", ["Incorrect password."] } });
+            return Results.Problem("Incorrect password.");
         }
 
         authenticationHelper.AppendUserTokens(user.Id, Response);
@@ -68,7 +64,7 @@ public class AuthController : ControllerBase
         string[] values = [creds.Email, creds.Password, creds.Username];
         if (values.Any(String.IsNullOrWhiteSpace))
         {
-            return Results.BadRequest("All fields must have a value!");
+            return Results.Problem("All fields must have a value!");
         }
 
         var newUser = new User()
@@ -82,10 +78,7 @@ public class AuthController : ControllerBase
         if (!createUserResult.Succeeded)
         {
             // Existing email/username, and invalid (easy) passwords are within the Errors.
-            return Results.BadRequest(new
-            {
-                Errors = createUserResult.Errors.Select(error => error.Description).ToArray()
-            });
+            return Results.Problem(createUserResult.Errors.First().Description);
         }
 
         authenticationHelper.AppendUserTokens(newUser.Id, Response);
