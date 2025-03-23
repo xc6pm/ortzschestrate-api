@@ -184,8 +184,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
     app.UseCors(devCorsPolicyName);
-    app.UseCors(client);
 }
+
+app.UseCors(client);
 
 
 app.UseHttpsRedirection();
