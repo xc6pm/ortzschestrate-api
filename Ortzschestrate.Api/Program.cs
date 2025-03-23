@@ -153,7 +153,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(devCorsPolicyName,
         builder => builder.WithOrigins("https://localhost:3000").AllowAnyHeader().AllowCredentials());
     options.AddPolicy(client,
-        builder => builder.WithOrigins("https://ortzschestrate-bh1j46qfq-hosseins-projects-aaef31ca.vercel.app")
+        builder => builder.WithOrigins("https://ortzschestrate.vercel.app")
             .AllowAnyHeader().AllowCredentials());
 });
 
