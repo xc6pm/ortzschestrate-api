@@ -18,8 +18,9 @@ public class JwtIntoCookieInjector(IDataProtectionProvider protectorProvider)
         var cookieOptions = new CookieOptions()
         {
             HttpOnly = true,
-            SameSite = SameSiteMode.Strict,
-            Secure = true
+            SameSite = SameSiteMode.Lax,
+            Secure = true,
+            IsEssential = true,
         };
 
         response.Cookies.Append(TokenCookieKey, _tokenProtector.Protect(tokens.Token), cookieOptions);
