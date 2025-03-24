@@ -20,7 +20,6 @@ public class JwtIntoCookieInjector(IDataProtectionProvider protectorProvider)
             HttpOnly = true,
             SameSite = SameSiteMode.None,
             Secure = true,
-            IsEssential = true,
         };
 
         response.Cookies.Append(TokenCookieKey, _tokenProtector.Protect(tokens.Token), cookieOptions);
