@@ -151,7 +151,7 @@ string[] corsWhitelist = (Environment.GetEnvironmentVariable(EnvKeys.CorsWhiteLi
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(corsPolicyName,
-        b => b.WithOrigins(corsWhitelist).AllowAnyHeader().AllowCredentials());
+        b => b.WithOrigins("https://nietzschess.xyz").AllowAnyHeader().AllowCredentials());
 });
 
 
