@@ -23,4 +23,6 @@ public static class EnvKeys
     
     
     public const string DisableWalletVerification = "ORTZSCHESTRATE_DISABLE_WALLET_VERIFICATION";
+    
+    public const string CorsWhiteList = "ORTZSCHESTRATE_CORS_WHITELIST";
 }

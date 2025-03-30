@@ -146,15 +146,12 @@ builder.Services.AddIdentityCore<User>(options =>
 
 builder.Services.AddSignalR();
 
-string devCorsPolicyName = "local dev client";
-string client = "client";
+string corsPolicyName = "cors_whitelist";
+string[] corsWhitelist = (Environment.GetEnvironmentVariable(EnvKeys.CorsWhiteList) ?? "").Split(";");
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(devCorsPolicyName,
-        builder => builder.WithOrigins("https://localhost:3000").AllowAnyHeader().AllowCredentials());
-    options.AddPolicy(client,
-        builder => builder.WithOrigins("https://ortzschestrate.vercel.app")
-            .AllowAnyHeader().AllowCredentials());
+    options.AddPolicy(corsPolicyName,
+        b => b.WithOrigins(corsWhitelist).AllowAnyHeader().AllowCredentials());
 });
 
 
@@ -183,10 +180,9 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors(devCorsPolicyName);
 }
 
-app.UseCors(client);
+app.UseCors(corsPolicyName);
 
 
 app.UseHttpsRedirection();
