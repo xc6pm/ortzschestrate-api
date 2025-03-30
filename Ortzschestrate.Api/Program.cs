@@ -146,12 +146,16 @@ builder.Services.AddIdentityCore<User>(options =>
 
 builder.Services.AddSignalR();
 
-string corsPolicyName = "cors_whitelist";
-string[] corsWhitelist = (Environment.GetEnvironmentVariable(EnvKeys.CorsWhiteList) ?? "").Split(";");
+string devCorsPolicyName = "local dev client";
+string client = "client";
+// string[] corsWhitelist = (Environment.GetEnvironmentVariable(EnvKeys.CorsWhiteList) ?? "").Split(";");
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(corsPolicyName,
-        b => b.WithOrigins("https://www.nietzschess.xyz").AllowAnyHeader().AllowCredentials());
+    options.AddPolicy(devCorsPolicyName,
+        builder => builder.WithOrigins("https://localhost:3000").AllowAnyHeader().AllowCredentials());
+    options.AddPolicy(client,
+        builder => builder.WithOrigins("https://ortzschestrate.vercel.app")
+            .AllowAnyHeader().AllowCredentials());
 });
 
 
@@ -182,7 +186,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors(corsPolicyName);
+app.UseCors(client);
 
 app.UseHttpsRedirection();
 
