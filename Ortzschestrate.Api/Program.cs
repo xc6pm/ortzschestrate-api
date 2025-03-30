@@ -184,9 +184,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(corsPolicyName);
 
-
 app.UseHttpsRedirection();
-
 
 app.UseAuthorization();
 
