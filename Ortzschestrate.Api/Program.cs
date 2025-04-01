@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -156,7 +157,10 @@ builder.Services.AddCors(options =>
 });
 
 
-builder.Services.AddDataProtection();
+builder.Services.AddDataProtection()
+    .SetApplicationName("Ortzschestrate")
+    .PersistKeysToFileSystem(
+        new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Keys")));
 
 ServiceRegisterer.RegisterServices(builder.Services);
 
