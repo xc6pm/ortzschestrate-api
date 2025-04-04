@@ -73,7 +73,7 @@ builder.Services.AddAuthentication(options =>
                                throw new InvalidOperationException(
                                    "The google client secret variable must be present or google authentication won't work!");
 
-        options.CallbackPath = "/api/auth/google-cb";
+        // options.CallbackPath = "/api/auth/google-cb";
 
         options.Events.OnTicketReceived = async context =>
         {
@@ -214,6 +214,7 @@ forwardedHeaderOptions.KnownProxies.Clear();
 
 app.UseForwardedHeaders(forwardedHeaderOptions);
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHub<GameHub>("/hubs/game");
