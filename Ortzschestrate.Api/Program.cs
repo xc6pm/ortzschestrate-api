@@ -17,6 +17,8 @@ using DbContext = Ortzschestrate.Data.DbContext;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.AddConsole();
+
 builder.Services.AddDbContext<DbContext>(options =>
 {
     string connectionString = Environment.GetEnvironmentVariable(EnvKeys.ConnectionString) ??
@@ -75,21 +77,32 @@ builder.Services.AddAuthentication(options =>
 
         options.Events.OnTicketReceived = async context =>
         {
+            Console.WriteLine("OnTicketReceived");
+
             // Need to handle this because UserManager.SignInAsync doesn't work with Jwt bearer.
             context.HandleResponse();
+
+            Console.WriteLine("Response handled");
 
             var email = context.Principal!.Claims.First(c => c.Type == ClaimTypes.Email).Value.Trim();
             var name = context.Principal!.Claims.First(c => c.Type == ClaimTypes.Name).Value.Trim();
             var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<User>>();
             var authenticationHelper = context.HttpContext.RequestServices.GetRequiredService<AuthenticationHelper>();
 
+            Console.WriteLine("Ingredients resolved");
+
             var userWithThisEmail = await userManager.FindByEmailAsync(email);
             if (userWithThisEmail != null)
             {
+                Console.WriteLine("Found by email; appending tokens");
                 authenticationHelper.AppendUserTokens(userWithThisEmail.Id, context.Response);
+                Console.WriteLine("Redirecting...");
                 context.Response.Redirect(context.ReturnUri);
                 return;
             }
+
+
+            Console.WriteLine("Creating new user");
 
             var newUser = new User()
             {
