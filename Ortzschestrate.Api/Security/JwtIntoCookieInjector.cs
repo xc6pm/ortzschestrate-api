@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.DataProtection;
+using CookieOptions = Microsoft.AspNetCore.Http.CookieOptions;
 
 namespace Ortzschestrate.Api.Security;
 
@@ -17,12 +18,13 @@ public class JwtIntoCookieInjector(IDataProtectionProvider protectorProvider)
     {
         HttpOnly = true,
         SameSite = SameSiteMode.None,
-        Secure = true,
+        Secure = true
     };
 
     public void InjectTokens(IssuedTokenResult tokens, HttpResponse response)
     {
-        response.Cookies.Append(TokenCookieKey, _tokenProtector.Protect(tokens.Token), _cookieOptions);
+        response.Cookies.Append(TokenCookieKey, _tokenProtector.Protect(tokens.Token),
+            new CookieOptions(_cookieOptions) { MaxAge = TimeSpan.FromHours(2) });
         response.Cookies.Append(RefreshTokenCookieKey, _refreshTokenProtector.Protect(tokens.RefreshToken),
             _cookieOptions);
     }
