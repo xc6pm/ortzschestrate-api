@@ -25,4 +25,9 @@ public static class EnvKeys
     public const string DisableWalletVerification = "ORTZSCHESTRATE_DISABLE_WALLET_VERIFICATION";
     
     public const string CorsWhiteList = "ORTZSCHESTRATE_CORS_WHITELIST";
+    
+    public const string FtpUserName = "ORTZSCHESTRATE_FTP_USERNAME";
+    public const string FtpPassword = "ORTZSCHESTRATE_FTP_PASSWORD";
+    
+    public const string DataProtectionCertPass = "ORTZSCHESTRATE_DATA_PROTECTION_CERT_PASS";
 }

@@ -1,5 +1,8 @@
+using System.Net;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using FluentFTP;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -170,10 +173,33 @@ builder.Services.AddCors(options =>
 });
 
 
+#if DEBUG
 builder.Services.AddDataProtection()
     .SetApplicationName("Ortzschestrate")
     .PersistKeysToFileSystem(
         new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Keys")));
+#else
+string ftpUsername = Environment.GetEnvironmentVariable(EnvKeys.FtpUserName) ??
+                     throw new Exception("FTP Username is required to start the application.");
+string ftpPassword = Environment.GetEnvironmentVariable(EnvKeys.FtpPassword) ??
+                     throw new Exception("FTP Password is required to start the application.");
+byte[] certBytes = null;
+using (var ftp = new FtpClient("bromo.liara.cloud", ftpUsername, ftpPassword, 2112))
+{
+    ftp.Connect();
+    ftp.DownloadBytes(out certBytes, "/certs/dataprotection.pfx");
+    // ftp.DownloadFile("./dataaprotection.pfx", "/certs/dataprotection.pfx", verifyOptions: FtpVerify.Throw);
+}
+
+string dataProtectionCertPass = Environment.GetEnvironmentVariable(EnvKeys.DataProtectionCertPass) ??
+                                throw new Exception(
+                                    $"{EnvKeys.DataProtectionCertPass} is required to start the application.");
+var dataProtectionCert = new X509Certificate2(certBytes, dataProtectionCertPass);
+builder.Services.AddDataProtection()
+    .SetApplicationName("Ortzschestrate")
+    .PersistKeysToDbContext<DbContext>()
+    .ProtectKeysWithCertificate(dataProtectionCert);
+#endif
 
 ServiceRegisterer.RegisterServices(builder.Services);
 
