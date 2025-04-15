@@ -23,8 +23,7 @@ public class JwtIntoCookieInjector(IDataProtectionProvider protectorProvider)
 
     public void InjectTokens(IssuedTokenResult tokens, HttpResponse response)
     {
-        response.Cookies.Append(TokenCookieKey, _tokenProtector.Protect(tokens.Token),
-            new CookieOptions(_cookieOptions) { MaxAge = TimeSpan.FromHours(2) });
+        response.Cookies.Append(TokenCookieKey, _tokenProtector.Protect(tokens.Token), _cookieOptions);
         response.Cookies.Append(RefreshTokenCookieKey, _refreshTokenProtector.Protect(tokens.RefreshToken),
             _cookieOptions);
     }

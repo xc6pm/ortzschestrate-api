@@ -64,92 +64,6 @@ builder.Services.AddAuthentication(options =>
                 return Task.CompletedTask;
             }
         };
-    })
-    .AddGoogle(options =>
-    {
-        options.SignInScheme = JwtBearerDefaults.AuthenticationScheme;
-
-        options.ClientId = Environment.GetEnvironmentVariable(EnvKeys.GoogleClientId) ??
-                           throw new InvalidOperationException(
-                               "The google client id variable must be present or google authentication won't work!");
-        options.ClientSecret = Environment.GetEnvironmentVariable(EnvKeys.GoogleClientSecret) ??
-                               throw new InvalidOperationException(
-                                   "The google client secret variable must be present or google authentication won't work!");
-
-        // options.CallbackPath = "/api/auth/google-cb";
-
-        options.Events.OnTicketReceived = async context =>
-        {
-            Console.WriteLine("OnTicketReceived");
-
-            // Need to handle this because UserManager.SignInAsync doesn't work with Jwt bearer.
-            context.HandleResponse();
-
-            Console.WriteLine("Response handled");
-
-            var email = context.Principal!.Claims.First(c => c.Type == ClaimTypes.Email).Value.Trim();
-            var name = context.Principal!.Claims.First(c => c.Type == ClaimTypes.Name).Value.Trim();
-            var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<User>>();
-            var authenticationHelper = context.HttpContext.RequestServices.GetRequiredService<AuthenticationHelper>();
-
-            Console.WriteLine("Ingredients resolved");
-
-            var userWithThisEmail = await userManager.FindByEmailAsync(email);
-            if (userWithThisEmail != null)
-            {
-                Console.WriteLine("Found by email; appending tokens");
-                authenticationHelper.AppendUserTokens(userWithThisEmail.Id, context.Response);
-                Console.WriteLine("Redirecting...");
-                context.Response.Redirect(context.ReturnUri);
-                return;
-            }
-
-
-            Console.WriteLine("Creating new user");
-
-            var newUser = new User()
-            {
-                Email = email,
-                UserName = name.Replace(" ", "")
-            };
-
-            var result = await userManager.CreateAsync(newUser);
-            if (!result.Succeeded)
-            {
-                if (result.Errors.Take(2).Count() == 1 && (result.Errors.First().Code == "InvalidUsername" ||
-                                                           result.Errors.First().Code == "DuplicateUsername"))
-                {
-                    var googleNameContainsInvalidChars = newUser.UserName.Any(ch => !validUsernameChars.Contains(ch));
-                    var usernameBase = googleNameContainsInvalidChars ? newUser.Email.Split('@')[0] : newUser.UserName;
-                    bool shouldTryEmailWithoutGuidFirst = googleNameContainsInvalidChars;
-
-                    do
-                    {
-                        newUser.UserName = usernameBase +
-                                           (shouldTryEmailWithoutGuidFirst
-                                               ? ""
-                                               : Guid.NewGuid().ToString("N").Substring(0, 4));
-                        shouldTryEmailWithoutGuidFirst = false;
-                        result = await userManager.CreateAsync(newUser);
-                    } while (!result.Succeeded && (result.Errors.First().Code == "InvalidUsername" ||
-                                                   result.Errors.First().Code == "DuplicateUsername"));
-
-                    if (!result.Succeeded)
-                    {
-                        context.Fail(string.Join(" --- ", result.Errors));
-                        return;
-                    }
-                }
-                else
-                {
-                    context.Fail(string.Join(" --- ", result.Errors));
-                    return;
-                }
-            }
-
-            authenticationHelper.AppendUserTokens(newUser.Id, context.Response);
-            context.Response.Redirect(context.ReturnUri);
-        };
     });
 builder.Services.AddAuthorization();
 
@@ -200,6 +114,8 @@ builder.Services.AddDataProtection()
     .PersistKeysToDbContext<DbContext>()
     .ProtectKeysWithCertificate(dataProtectionCert);
 #endif
+
+builder.Services.AddHttpClient();
 
 ServiceRegisterer.RegisterServices(builder.Services);
 
