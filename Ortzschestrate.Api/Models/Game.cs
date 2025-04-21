@@ -1,9 +1,9 @@
-using System.Numerics;
 using Chess;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Ortzschestrate.Api.Models;
 
+// Terminology: Player1 = Players[0] & Player2 = Players[1]
 public class Game
 {
     private readonly ChessBoard _board = new();
@@ -11,40 +11,60 @@ public class Game
 
     public Game(PendingGame pendingGame, Player player2)
     {
-        Player1 = pendingGame.Creator;
-        Player2 = player2;
-        Player1Color = pendingGame.CreatorColor;
-        Player2Color = Player1Color == PieceColor.White ? PieceColor.Black : PieceColor.White;
+        Players = [pendingGame.Creator, player2];
+        PlayerColors =
+        [
+            pendingGame.CreatorColor,
+            pendingGame.CreatorColor == PieceColor.White ? PieceColor.Black : PieceColor.White
+        ];
         StakeEth = pendingGame.StakeEth;
         GameType = pendingGame.GameType;
         Id = Guid.NewGuid();
         StartedTime = _lastMoveTime = DateTime.UtcNow;
-        Player1RemainingTime = Player2RemainingTime = pendingGame.GameType.GetTimeSpan();
+        RemainingTimes = [pendingGame.GameType.GetTimeSpan(), pendingGame.GameType.GetTimeSpan()];
     }
 
     public Guid Id { get; }
 
-    public Player Player1 { get; }
-    public Player Player2 { get; }
-    public PieceColor Player1Color { get; }
-    public PieceColor Player2Color { get; }
+    public Player[] Players { get; }
+    public PieceColor[] PlayerColors { get; }
     public double StakeEth { get; }
     public bool IsWagered => StakeEth > 0;
     public GameType GameType { get; }
     public DateTime StartedTime { get; }
-    public TimeSpan Player1RemainingTime { get; private set; }
-    public TimeSpan Player2RemainingTime { get; private set; }
+    public TimeSpan[] RemainingTimes { get; }
+    public CancellationTokenSource?[] ConnectionTimeoutCancellations { get; } = new CancellationTokenSource[2];
+    public bool IsPlayer1Turn => _board.Turn == PlayerColors[0];
+
 
     public string Pgn => _board.ToPgn();
     public EndGameInfo? EndGame => _board.EndGame;
     public int MovesMade => _board.MoveIndex + 1;
+    public string? LastMove => _board.MovesToSan.Count > 0 ? _board.MovesToSan[^1] : null;
+
+    public bool IsPlayer1(string userId) => Players[0].UserId == userId;
+
+    public Player GetPlayer(string userId) => Players[GetPlayerIdx(userId)];
+
+    public Player GetOpponent(string userId) => Players[GetOpponentIdx(userId)];
+
+    public int GetPlayerIdx(string userId) => Players[0].UserId == userId ? 0 :
+        Players[1].UserId == userId ? 1 :
+        throw new ArgumentException("The userId doesn't belong to any of the players in this game.");
+
+    public int GetOpponentIdx(string userId) => GetPlayerIdx(userId) == 0 ? 1 : 0;
+
+    public bool CanMove(string userId)
+    {
+        bool isPlayer1 = IsPlayer1(userId);
+
+        return (isPlayer1 && IsPlayer1Turn) || (!isPlayer1 && !IsPlayer1Turn);
+    }
 
     public bool Move(string userId, string move, out TimeSpan remainingTime)
     {
-        var player = Player1.UserId == userId ? Player1 :
-            Player2.UserId == userId ? Player2 :
-            throw new ArgumentException("The userId doesn't belong to any of the players in this game.");
-        var playerColor = player == Player1 ? Player1Color : Player2Color;
+        var player = GetPlayer(userId);
+        var playerColor = player == Players[0] ? PlayerColors[0] : PlayerColors[1];
 
         if (playerColor != _board.Turn)
         {
@@ -57,15 +77,15 @@ public class Game
         }
         else
         {
-            if (player == Player1)
+            if (player == Players[0])
             {
-                Player1RemainingTime -= (DateTime.UtcNow - _lastMoveTime);
-                remainingTime = Player1RemainingTime;
+                RemainingTimes[0] -= (DateTime.UtcNow - _lastMoveTime);
+                remainingTime = RemainingTimes[0];
             }
             else
             {
-                Player2RemainingTime -= (DateTime.UtcNow - _lastMoveTime);
-                remainingTime = Player2RemainingTime;
+                RemainingTimes[1] -= (DateTime.UtcNow - _lastMoveTime);
+                remainingTime = RemainingTimes[1];
             }
 
             _lastMoveTime = DateTime.UtcNow;
@@ -81,43 +101,57 @@ public class Game
         }
     }
 
+    public TimeSpan CalculateRemainingTime(int playerIdx)
+    {
+        if (playerIdx != 0 && playerIdx != 1)
+            throw new ArgumentException($"Argument {nameof(playerIdx)} must be 0 or 1.");
+
+        bool thisPlayersTurn = (IsPlayer1Turn && playerIdx == 0) || (!IsPlayer1Turn && playerIdx == 1);
+        if (!thisPlayersTurn)
+        {
+            return RemainingTimes[playerIdx];
+        }
+
+        return RemainingTimes[playerIdx] - (DateTime.UtcNow - _lastMoveTime);
+    }
+
     public bool IsPlayer1OutOfTime()
     {
-        if (Player1RemainingTime <= TimeSpan.Zero)
+        if (RemainingTimes[0] <= TimeSpan.Zero)
             return true;
 
-        bool isItPlayer1Turn = Player1Color == _board.Turn;
+        bool isItPlayer1Turn = PlayerColors[0] == _board.Turn;
         if (!isItPlayer1Turn)
             return false;
 
-        var res = DateTime.UtcNow - _lastMoveTime > Player1RemainingTime;
+        var res = DateTime.UtcNow - _lastMoveTime > RemainingTimes[0];
         if (res)
-            _board.Resign(Player1Color);
+            _board.EndByTimeout(PlayerColors[0]);
         return res;
     }
 
     public bool IsPlayer2OutOfTime()
     {
-        if (Player2RemainingTime <= TimeSpan.Zero)
+        if (RemainingTimes[1] <= TimeSpan.Zero)
             return true;
 
-        bool isItPlayer2Turn = Player1Color == _board.Turn;
+        bool isItPlayer2Turn = PlayerColors[0] == _board.Turn;
         if (!isItPlayer2Turn)
             return false;
 
 
-        var res = DateTime.UtcNow - _lastMoveTime > Player2RemainingTime;
+        var res = DateTime.UtcNow - _lastMoveTime > RemainingTimes[1];
         if (res)
-            _board.Resign(Player2Color);
+            _board.EndByTimeout(PlayerColors[1]);
         return res;
     }
 
     public void Resign(Player player)
     {
-        if (player == Player1)
-            Resign(Player1Color);
-        else if (player == Player2)
-            Resign(Player2Color);
+        if (player == Players[0])
+            Resign(PlayerColors[0]);
+        else if (player == Players[1])
+            Resign(PlayerColors[1]);
     }
 
     public void Resign(PieceColor color)
