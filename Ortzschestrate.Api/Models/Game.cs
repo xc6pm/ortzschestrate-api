@@ -38,6 +38,7 @@ public class Game
 
 
     public string Pgn => _board.ToPgn();
+    public string Fen => _board.ToFen();
     public EndGameInfo? EndGame => _board.EndGame;
     public int MovesMade => _board.MoveIndex + 1;
     public string? LastMove => _board.MovesToSan.Count > 0 ? _board.MovesToSan[^1] : null;

@@ -7,7 +7,8 @@ public record OngoingGame(
     double TimeInMilliseconds,
     double PlayerRemainingTime,
     double OpponentRemainingTime,
-    double StakeEth)
+    double StakeEth,
+    string Fen)
 {
     public OngoingGame(Game game, int playerIdx) : this(
         game.Id.ToString(),
@@ -16,12 +17,13 @@ public record OngoingGame(
         game.GameType.GetTimeSpan().TotalMilliseconds,
         game.CalculateRemainingTime(playerIdx).TotalMilliseconds,
         game.CalculateRemainingTime(playerIdx == 0 ? 1 : 0).TotalMilliseconds,
-        game.StakeEth)
+        game.StakeEth,
+        game.Fen)
     {
     }
 
     public void Deconstruct(out string Id, out string Opponent, out char Color, out double TimeInMilliseconds,
-        out double PlayerRemainingTime, out double OpponentRemainingTime, out double StakeEth)
+        out double PlayerRemainingTime, out double OpponentRemainingTime, out double StakeEth, out string Fen)
     {
         Id = this.Id;
         Opponent = this.Opponent;
@@ -30,5 +32,6 @@ public record OngoingGame(
         PlayerRemainingTime = this.PlayerRemainingTime;
         OpponentRemainingTime = this.OpponentRemainingTime;
         StakeEth = this.StakeEth;
+        Fen = this.Fen;
     }
 }
