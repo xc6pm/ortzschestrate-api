@@ -62,8 +62,10 @@ public partial class GameHub
         if (!success)
             throw new HubException("Couldn't make that move.");
 
-        await Clients.Users([game.Players[0].UserId, game.Players[1].UserId])
-            .PlayerMoved(new(move, remainingTime.TotalMilliseconds));
+        _ = outgoingMessageTracker.PlayerMovedAsync(game.Players[0].UserId,
+            new GameUpdate(move, remainingTime.TotalMilliseconds));
+        _ = outgoingMessageTracker.PlayerMovedAsync(game.Players[1].UserId,
+            new GameUpdate(move, remainingTime.TotalMilliseconds));
 
         if (game.EndGame != null)
         {

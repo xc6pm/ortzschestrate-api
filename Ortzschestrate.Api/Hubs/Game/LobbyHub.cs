@@ -158,8 +158,7 @@ public partial class GameHub
                 }
 
                 await Clients.All.LobbyUpdated(_pendingGamesByCreatorId.Values.ToList());
-                await Clients.User(startingGame.Players[0].UserId)
-                    .GameStarted(startingGame.Id.ToString());
+                _ = outgoingMessageTracker.GameStartedAsync(startingGame.Players[0].UserId, startingGame.Id.ToString());
             }
         }
     }

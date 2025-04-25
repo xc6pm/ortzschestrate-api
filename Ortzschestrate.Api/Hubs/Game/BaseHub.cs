@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Ortzschestrate.Api.Hubs.Game;
 using Ortzschestrate.Api.Models;
+using Ortzschestrate.Api.Utilities;
 using Ortzschestrate.Data.Models;
 using Ortzschestrate.Web3.Actions;
 using GameResult = Ortzschestrate.Web3.Actions.GameResult;
@@ -16,7 +17,8 @@ public partial class GameHub(
     PlayerCache playerCache,
     StartGame startGame,
     UserManager<User> userManager,
-    ResolveGame resolveGame)
+    ResolveGame resolveGame,
+    IOutgoingMessageTracker outgoingMessageTracker)
     : Hub<IGameClient>
 {
     private static readonly ConcurrentDictionary<string, PendingGame> _pendingGamesByCreatorId = new();
@@ -52,6 +54,7 @@ public partial class GameHub(
         bool lobbyUpdated = false;
         Player? leavingPlayer = null;
         bool countdownPlayerTimeout = false;
+        bool duplicateDisconnect = false;
         await _lobbySemaphore.WaitAsync();
         try
         {
@@ -70,7 +73,7 @@ public partial class GameHub(
                         : "Starting new timeout");
                     // OnDisconnect may be triggered multiple times for one instance.
                     // This prevents another timeout starting when another is ongoing.
-                    bool duplicateDisconnect =
+                    duplicateDisconnect =
                         leavingPlayer.OngoingShortGame.ConnectionTimeoutCancellations[playerIdx] != null;
                     if (!duplicateDisconnect)
                     {
@@ -92,7 +95,8 @@ public partial class GameHub(
             // Closing duplicate disconnect means the same connection we're going to wait for timeout for
             // is going to be out of memory prematurely.
             // Duplicate disconnect must wait behind the timer to be treated the same as the original disconnect.
-            if (!countdownPlayerTimeout)
+            // The connections are the same despite their ids appear to be the same.
+            if (!countdownPlayerTimeout && !duplicateDisconnect)
                 playerCache.OnDisconnect(Context);
 
             if (lobbyUpdated)
@@ -103,14 +107,30 @@ public partial class GameHub(
         Debug.WriteLine(exception);
         await base.OnDisconnectedAsync(exception);
 
+        if (duplicateDisconnect)
+        {
+            try
+            {
+                int playerIdx = leavingPlayer.OngoingShortGame.GetPlayerIdx(Context.UserIdentifier!);
+                await Task.Delay(_reconnectionTimeout,
+                    leavingPlayer.OngoingShortGame.ConnectionTimeoutCancellations[playerIdx].Token);
+            }
+            finally
+            {
+                playerCache.OnDisconnect(Context);
+            }
+
+            return;
+        }
+
         if (countdownPlayerTimeout)
         {
             Console.WriteLine("Player left game");
             var idxOfPlayer = leavingPlayer!.OngoingShortGame!.IsPlayer1(leavingPlayer.UserId) ? 0 : 1;
             int idxOfOpponent = idxOfPlayer == 0 ? 1 : 0;
 
-            await Clients.User(leavingPlayer.OngoingShortGame.Players[idxOfOpponent].UserId)
-                .OpponentConnectionLost(_reconnectionTimeout);
+            _ = outgoingMessageTracker.OpponentConnectionLostAsync(
+                leavingPlayer.OngoingShortGame.Players[idxOfOpponent].UserId, _reconnectionTimeout);
 
             try
             {
@@ -121,20 +141,19 @@ public partial class GameHub(
             catch (TaskCanceledException)
             {
                 Console.WriteLine($"Player {leavingPlayer.Name} reconnected to {leavingPlayer.OngoingShortGame.Id}");
-                List<Task> tasks =
-                    [Clients.User(leavingPlayer.OngoingShortGame.Players[idxOfOpponent].UserId).OpponentReconnected()];
+                _ = outgoingMessageTracker.OpponentReconnectedAsync(leavingPlayer.OngoingShortGame
+                    .Players[idxOfOpponent].UserId);
 
                 bool isThisPlayersTurn = leavingPlayer.OngoingShortGame.CanMove(leavingPlayer.UserId);
                 if (isThisPlayersTurn && leavingPlayer.OngoingShortGame.LastMove != null)
                 {
                     // Likely the leavingPlayer hasn't received opponent's move during the connection loss.
                     // They'll reject this update if they had received it before.
-                    tasks.Add(Clients.User(Context.UserIdentifier!).PlayerMoved(new GameUpdate(
+                    _ = outgoingMessageTracker.PlayerMovedAsync(Context.UserIdentifier!, new GameUpdate(
                         leavingPlayer.OngoingShortGame.LastMove,
-                        leavingPlayer.OngoingShortGame.RemainingTimes[idxOfOpponent].TotalMilliseconds)));
+                        leavingPlayer.OngoingShortGame.RemainingTimes[idxOfOpponent].TotalMilliseconds));
                 }
 
-                await Task.WhenAll(tasks);
                 return;
             }
             finally
@@ -160,13 +179,21 @@ public partial class GameHub(
         }
     }
 
+    [HubMethodName("ack")]
+    public void Acknowledge(uint messageId)
+    {
+        outgoingMessageTracker.Acknowledge(Context.UserIdentifier!, messageId);
+    }
+
     private async Task finalizeEndedGameAsync(Models.Game game)
     {
         if (game.IsWagered)
             await resolveGame.DoAsync(game.Id, findWeb3GameResult(game));
 
-        await Clients.Users([game.Players[0].UserId, game.Players[1].UserId])
-            .GameEnded(new(game.EndGame!.EndgameType.ToString(), game.EndGame.WonSide?.AsChar));
+        _ = outgoingMessageTracker.GameEndedAsync(game.Players[0].UserId,
+            new Models.GameResult(game.EndGame!.EndgameType.ToString(), game.EndGame.WonSide?.AsChar));
+        _ = outgoingMessageTracker.GameEndedAsync(game.Players[1].UserId,
+            new Models.GameResult(game.EndGame!.EndgameType.ToString(), game.EndGame.WonSide?.AsChar));
         game.Players[0].OngoingShortGame = null;
         game.Players[1].OngoingShortGame = null;
         _ongoingShortGames.TryRemove(game.Id, out _);
