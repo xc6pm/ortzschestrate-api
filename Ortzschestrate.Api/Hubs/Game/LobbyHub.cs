@@ -17,7 +17,7 @@ public partial class GameHub
 
         if (stakeEth > 0)
         {
-            var user = await _userManager.FindByIdAsync(Context.UserIdentifier!);
+            var user = await userManager.FindByIdAsync(Context.UserIdentifier!);
             if (String.IsNullOrEmpty(user.WalletAddress))
             {
                 throw new HubException("You need a verified wallet address to start a wagered game.");
@@ -34,7 +34,7 @@ public partial class GameHub
         await _lobbySemaphore.WaitAsync();
         try
         {
-            var player = _playerCache.GetPlayer(Context.UserIdentifier!);
+            var player = playerCache.GetPlayer(Context.UserIdentifier!);
             if (player.OngoingShortGame != null)
             {
                 throw new HubException("You're already playing a game. Finish that first.");
@@ -90,7 +90,7 @@ public partial class GameHub
         string? player1Address = null, player2Address = null;
         if (wageredGame)
         {
-            var players = await _userManager.Users
+            var players = await userManager.Users
                 .Where(u => u.Id == creatorId || u.Id == Context.UserIdentifier!)
                 .Take(2).ToListAsync();
             player1Address = players.First(p => p.Id == creatorId).WalletAddress!;
@@ -109,8 +109,8 @@ public partial class GameHub
         Player? player1 = null, player2 = null;
         try
         {
-            player1 = _playerCache.GetPlayer(creatorId);
-            player2 = _playerCache.GetPlayer(Context.UserIdentifier!);
+            player1 = playerCache.GetPlayer(creatorId);
+            player2 = playerCache.GetPlayer(Context.UserIdentifier!);
             if (_pendingGamesByCreatorId.ContainsKey(Context.UserIdentifier!))
             {
                 throw new HubException("Cancel the game you created first.");
@@ -143,7 +143,7 @@ public partial class GameHub
             {
                 if (wageredGame)
                 {
-                    var gameStartedOnBlockchain = await _startGame.DoAsync(startingGame.Id, player1Address!,
+                    var gameStartedOnBlockchain = await startGame.DoAsync(startingGame.Id, player1Address!,
                         player2Address!,
                         startingGame.StakeEth);
 
@@ -158,8 +158,7 @@ public partial class GameHub
                 }
 
                 await Clients.All.LobbyUpdated(_pendingGamesByCreatorId.Values.ToList());
-                await Clients.User(startingGame.Player1.UserId)
-                    .GameStarted(startingGame.Id.ToString());
+                _ = outgoingMessageTracker.GameStartedAsync(startingGame.Players[0].UserId, startingGame.Id.ToString());
             }
         }
     }

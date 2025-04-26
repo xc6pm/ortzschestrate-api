@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
+using Ortzschestrate.Api.Models;
 
 namespace Ortzschestrate.Api.Hubs;
 
@@ -12,25 +13,29 @@ public partial class GameHub
             return null;
         }
 
-        if (game.Player1.UserId == Context.UserIdentifier!)
+        int playerIdx;
+        try
         {
-            return new
-            {
-                Color = game.Player1Color.AsChar, Opponent = game.Player2.Name,
-                TimeInMilliseconds = game.GameType.GetTimeSpan().TotalMilliseconds
-            };
+            playerIdx = game.GetPlayerIdx(Context.UserIdentifier!);
+        }
+        catch (ArgumentException e)
+        {
+            throw new HubException(e.Message);
         }
 
-        if (game.Player2.UserId == Context.UserIdentifier!)
-        {
-            return new
-            {
-                Color = game.Player2Color.AsChar, Opponent = game.Player1.Name,
-                TimeInMilliseconds = game.GameType.GetTimeSpan().TotalMilliseconds
-            };
-        }
+        return new OngoingGame(game, playerIdx);
+    }
 
-        return null;
+    [HubMethodName("ongoingShortGame")]
+    public object? GetOngoingShortGameAsync()
+    {
+        var player = playerCache.GetPlayer(Context.UserIdentifier!);
+
+        if (player.OngoingShortGame == null)
+            return null;
+
+        int playerIdx = player.OngoingShortGame.GetPlayerIdx(player.UserId);
+        return new OngoingGame(player.OngoingShortGame, playerIdx);
     }
 
     [HubMethodName("move")]
@@ -57,8 +62,10 @@ public partial class GameHub
         if (!success)
             throw new HubException("Couldn't make that move.");
 
-        await Clients.Users([game.Player1.UserId, game.Player2.UserId])
-            .PlayerMoved(new(move, remainingTime.TotalMilliseconds));
+        _ = outgoingMessageTracker.PlayerMovedAsync(game.Players[0].UserId,
+            new GameUpdate(move, remainingTime.TotalMilliseconds));
+        _ = outgoingMessageTracker.PlayerMovedAsync(game.Players[1].UserId,
+            new GameUpdate(move, remainingTime.TotalMilliseconds));
 
         if (game.EndGame != null)
         {
@@ -84,5 +91,18 @@ public partial class GameHub
         }
 
         return false;
+    }
+
+    [HubMethodName("resignShortGame")]
+    public async Task ResignOngoingShortGameAsync()
+    {
+        var player = playerCache.GetPlayer(Context.UserIdentifier!);
+
+        if (player.OngoingShortGame == null)
+            throw new HubException("You don't have a short game in progress.");
+
+        player.OngoingShortGame.Resign(player);
+
+        await finalizeEndedGameAsync(player.OngoingShortGame);
     }
 }

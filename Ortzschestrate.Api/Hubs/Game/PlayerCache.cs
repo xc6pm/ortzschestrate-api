@@ -18,7 +18,7 @@ namespace Ortzschestrate.Api.Hubs.Game;
 public class PlayerCache
 {
     private readonly ConcurrentDictionary<string, Player> _playersById = new();
-    private readonly ConcurrentDictionary<string, List<string>> _playerConnections = new();
+    private readonly ConcurrentDictionary<string, HashSet<string>> _playerConnections = new();
 
     public Player GetPlayer(string playerId) => _playersById[playerId];
 
@@ -27,6 +27,7 @@ public class PlayerCache
 
     public async Task OnNewConnectionAsync(HubCallerContext context)
     {
+        Console.WriteLine($"New Connection: {context.ConnectionId}");
         if (_playerConnections.TryGetValue(context.UserIdentifier!, out var connections))
         {
             connections.Add(context.ConnectionId);

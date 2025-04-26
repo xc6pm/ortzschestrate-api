@@ -203,6 +203,8 @@ builder.Services.AddDataProtection()
 
 ServiceRegisterer.RegisterServices(builder.Services);
 
+builder.Services.AddSingleton<IOutgoingMessageTracker, OutgoingMessageTracker>();
+
 builder.Services.AddTransient<WalletVerificationTokenProvider<User>>();
 
 builder.Services.AddSingleton<JwtIntoCookieInjector>();
