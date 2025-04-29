@@ -8,7 +8,8 @@ public record OngoingGame(
     double PlayerRemainingTime,
     double OpponentRemainingTime,
     double StakeEth,
-    string Fen)
+    string Fen,
+    IReadOnlyList<string> MovesPlayed)
 {
     public OngoingGame(Game game, int playerIdx) : this(
         game.Id.ToString(),
@@ -18,12 +19,14 @@ public record OngoingGame(
         game.CalculateRemainingTime(playerIdx).TotalMilliseconds,
         game.CalculateRemainingTime(playerIdx == 0 ? 1 : 0).TotalMilliseconds,
         game.StakeEth,
-        game.Fen)
+        game.Fen,
+        game.MovesPlayed)
     {
     }
 
     public void Deconstruct(out string Id, out string Opponent, out char Color, out double TimeInMilliseconds,
-        out double PlayerRemainingTime, out double OpponentRemainingTime, out double StakeEth, out string Fen)
+        out double PlayerRemainingTime, out double OpponentRemainingTime, out double StakeEth, out string Fen,
+        out IReadOnlyList<string> MovesPlayed)
     {
         Id = this.Id;
         Opponent = this.Opponent;
@@ -33,5 +36,6 @@ public record OngoingGame(
         OpponentRemainingTime = this.OpponentRemainingTime;
         StakeEth = this.StakeEth;
         Fen = this.Fen;
+        MovesPlayed = this.MovesPlayed;
     }
 }
