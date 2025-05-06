@@ -16,5 +16,7 @@ namespace Ortzschestrate.Data
         }
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
+
+        public DbSet<FinishedGame> FinishedGames { get; set; }
     }
 }

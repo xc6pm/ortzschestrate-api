@@ -46,10 +46,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Business\" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Compile Remove="obj\**" />
         <Compile Remove="bin\**" />
     </ItemGroup>

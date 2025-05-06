@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Ortzschestrate.Data;
@@ -11,9 +12,11 @@ using Ortzschestrate.Data;
 namespace Ortzschestrate.Data.Migrations
 {
     [DbContext(typeof(DbContext))]
-    partial class DbContextModelSnapshot : ModelSnapshot
+    [Migration("20250502135917_Finished_Games")]
+    partial class Finished_Games
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -205,9 +208,9 @@ namespace Ortzschestrate.Data.Migrations
                         .IsRequired()
                         .HasColumnType("smallint[]");
 
-                    b.Property<double[]>("RemainingTimesInMs")
+                    b.Property<int[]>("RemainingTimesInMs")
                         .IsRequired()
-                        .HasColumnType("double precision[]");
+                        .HasColumnType("integer[]");
 
                     b.Property<double>("StakeEth")
                         .HasColumnType("double precision");
@@ -215,8 +218,8 @@ namespace Ortzschestrate.Data.Migrations
                     b.Property<DateTime>("Started")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double>("TimeInMs")
-                        .HasColumnType("double precision");
+                    b.Property<int>("TimeInMs")
+                        .HasColumnType("integer");
 
                     b.Property<byte?>("WonSide")
                         .HasColumnType("smallint");

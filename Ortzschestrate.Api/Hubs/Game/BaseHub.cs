@@ -6,8 +6,10 @@ using Microsoft.AspNetCore.SignalR;
 using Ortzschestrate.Api.Hubs.Game;
 using Ortzschestrate.Api.Models;
 using Ortzschestrate.Api.Utilities;
+using Ortzschestrate.Data;
 using Ortzschestrate.Data.Models;
 using Ortzschestrate.Web3.Actions;
+using FinishedGame = Ortzschestrate.Data.Models.FinishedGame;
 using GameResult = Ortzschestrate.Web3.Actions.GameResult;
 
 namespace Ortzschestrate.Api.Hubs;
@@ -18,7 +20,8 @@ public partial class GameHub(
     StartGame startGame,
     UserManager<User> userManager,
     ResolveGame resolveGame,
-    IOutgoingMessageTracker outgoingMessageTracker)
+    IOutgoingMessageTracker outgoingMessageTracker,
+    DbContext dbContext)
     : Hub<IGameClient>
 {
     private static readonly ConcurrentDictionary<string, PendingGame> _pendingGamesByCreatorId = new();
@@ -197,6 +200,29 @@ public partial class GameHub(
         game.Players[0].OngoingShortGame = null;
         game.Players[1].OngoingShortGame = null;
         _ongoingShortGames.TryRemove(game.Id, out _);
+
+        var player1 = await userManager.FindByIdAsync(game.Players[0].UserId);
+        var player2 = await userManager.FindByIdAsync(game.Players[1].UserId);
+
+        dbContext.FinishedGames.Add(new FinishedGame
+        {
+            Id = game.Id,
+            Players = [player1!, player2!],
+            PlayerColors =
+            [
+                convertCharToDbColor(game.PlayerColors[0].AsChar)!.Value,
+                convertCharToDbColor(game.PlayerColors[1].AsChar)!.Value
+            ],
+            StakeEth = game.StakeEth,
+            TimeInMs = game.GameType.GetTimeSpan().TotalMilliseconds,
+            Started = game.StartedTime,
+            RemainingTimesInMs = [game.RemainingTimes[0].TotalMilliseconds, game.RemainingTimes[1].TotalMilliseconds],
+            Pgn = game.Pgn,
+            EndGameType = (EndgameType)game.EndGame.EndgameType,
+            WonSide = convertCharToDbColor(game.EndGame.WonSide?.AsChar),
+        });
+
+        await dbContext.SaveChangesAsync();
     }
 
     private GameResult findWeb3GameResult(Models.Game game)
@@ -213,4 +239,11 @@ public partial class GameHub(
 
         return GameResult.Player2Won;
     }
+
+    private Color? convertCharToDbColor(char? ch) => ch switch
+    {
+        'w' => Color.White,
+        'b' => Color.Black,
+        _ => null
+    };
 }

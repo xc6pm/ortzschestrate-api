@@ -7,5 +7,7 @@ namespace Ortzschestrate.Data.Models
     {
         [StringLength(42)] public string? UnverifiedWalletAddress { get; set; }
         [StringLength(42)] public string? WalletAddress { get; set; }
+
+        public virtual ICollection<FinishedGame> FinishedGames {get;set;} = [];
     }
 }
