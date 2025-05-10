@@ -10,4 +10,5 @@ public interface IGameClient
     Task OpponentConnectionLost(AckMessage<int> reconnectionTimeout);
     Task OpponentReconnected(AckMessage ack);
     Task GameEnded(AckMessage<GameResult> gameResult);
+    Task GameHistoryUpdated(AckMessage<FinishedGameVM> addedGame);
 }

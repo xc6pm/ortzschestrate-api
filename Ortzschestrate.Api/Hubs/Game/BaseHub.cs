@@ -204,7 +204,7 @@ public partial class GameHub(
         var player1 = await userManager.FindByIdAsync(game.Players[0].UserId);
         var player2 = await userManager.FindByIdAsync(game.Players[1].UserId);
 
-        dbContext.FinishedGames.Add(new FinishedGame
+        var finishedGame = new FinishedGame
         {
             Id = game.Id,
             Players = [player1!, player2!],
@@ -220,9 +220,14 @@ public partial class GameHub(
             Pgn = game.Pgn,
             EndGameType = (EndgameType)game.EndGame.EndgameType,
             WonSide = convertCharToDbColor(game.EndGame.WonSide?.AsChar),
-        });
+        };
+        dbContext.FinishedGames.Add(finishedGame);
 
         await dbContext.SaveChangesAsync();
+
+        var finishedGameVm = new FinishedGameVM(finishedGame);
+        _ = outgoingMessageTracker.GameHistoryUpdatedAsync(player1!.Id, finishedGameVm);
+        _ = outgoingMessageTracker.GameHistoryUpdatedAsync(player2!.Id, finishedGameVm);
     }
 
     private GameResult findWeb3GameResult(Models.Game game)
