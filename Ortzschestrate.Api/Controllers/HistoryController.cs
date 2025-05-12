@@ -35,4 +35,13 @@ public class HistoryController : ControllerBase
 
         return finishedGames;
     }
+
+    [Authorize]
+    [ActionName("game")]
+    public async Task<FinishedGameVM?> GetFinishedGame(string id, [FromServices] DbContext dbContext){
+        var guid = Guid.Parse(id);
+        var game = await dbContext.FinishedGames.Include(g => g.Players).FirstOrDefaultAsync(g => g.Id == guid);
+
+        return game != null ? new FinishedGameVM(game) : null;
+    }
 }
