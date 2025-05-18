@@ -18,10 +18,10 @@ public class Game
             pendingGame.CreatorColor == PieceColor.White ? PieceColor.Black : PieceColor.White
         ];
         StakeEth = pendingGame.StakeEth;
-        GameType = pendingGame.GameType;
+        TimeControl = pendingGame.TimeControl;
         Id = Guid.NewGuid();
         StartedTime = _lastMoveTime = DateTime.UtcNow;
-        RemainingTimes = [pendingGame.GameType.GetTimeSpan(), pendingGame.GameType.GetTimeSpan()];
+        RemainingTimes = [pendingGame.TimeControl.GetTimeSpan(), pendingGame.TimeControl.GetTimeSpan()];
     }
 
     public Guid Id { get; }
@@ -30,7 +30,7 @@ public class Game
     public PieceColor[] PlayerColors { get; }
     public double StakeEth { get; }
     public bool IsWagered => StakeEth > 0;
-    public GameType GameType { get; }
+    public TimeControl TimeControl { get; }
     public DateTime StartedTime { get; }
     public TimeSpan[] RemainingTimes { get; }
     public CancellationTokenSource?[] ConnectionTimeoutCancellations { get; } = new CancellationTokenSource[2];
@@ -73,7 +73,7 @@ public class Game
             throw new ArgumentException("It's not your turn.");
         }
 
-        if (GameType == GameType.Untimed)
+        if (TimeControl == TimeControl.Untimed)
         {
             remainingTime = TimeSpan.Zero;
         }

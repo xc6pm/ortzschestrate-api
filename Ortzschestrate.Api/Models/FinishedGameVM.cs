@@ -2,12 +2,37 @@ using Ortzschestrate.Data.Models;
 
 namespace Ortzschestrate.Api.Models;
 
+public record FinishedGameSlim(
+    string Id,
+    Player[] Players,
+    char[] PlayerColors,
+    double StakeEth,
+    TimeControl TimeControl,
+    DateTime Started,
+    char? WonSide)
+{
+    public FinishedGameSlim(FinishedGame g) : this(g.Id.ToString(),
+        g.Players.Select(p => new Player(p.Id, p.UserName!)).ToArray(),
+        g.PlayerColors.Select(c => c == Color.White ? 'w' : 'b').ToArray(),
+        g.StakeEth,
+        TimeControl.FromMilliseconds((int)g.TimeInMs),
+        g.Started,
+        g.WonSide switch
+        {
+            null => null,
+            Color.White => 'w',
+            _ => 'b'
+        })
+    {
+    }
+}
+
 public record FinishedGameVM(
     string Id,
     Player[] Players,
     char[] PlayerColors,
     double StakeEth,
-    double TimeInMs,
+    TimeControl TimeControl,
     DateTime Started,
     double[] RemainingTimesInMs,
     string Pgn,
@@ -19,7 +44,7 @@ public record FinishedGameVM(
         g.Players.Select(p => new Player(p.Id, p.UserName!)).ToArray(),
         g.PlayerColors.Select(c => c == Color.White ? 'w' : 'b').ToArray(),
         g.StakeEth,
-        g.TimeInMs,
+        TimeControl.FromMilliseconds((int)g.TimeInMs),
         g.Started,
         g.RemainingTimesInMs.ToArray(),
         g.Pgn,

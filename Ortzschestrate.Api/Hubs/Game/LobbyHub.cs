@@ -12,7 +12,7 @@ public partial class GameHub
     [HubMethodName("create")]
     public async Task CreateGameAsync(int time, char creatorColor, double stakeEth)
     {
-        if (!GameType.TryFromValue(time, out GameType timeLimit))
+        if (!TimeControl.TryFromValue(time, out TimeControl timeLimit))
             throw new HubException("The gameType argument is invalid.");
 
         if (stakeEth > 0)

@@ -15,7 +15,7 @@ public record OngoingGame(
         game.Id.ToString(),
         game.Players[playerIdx == 0 ? 1 : 0].Name,
         game.PlayerColors[playerIdx].AsChar,
-        game.GameType.GetTimeSpan().TotalMilliseconds,
+        game.TimeControl.GetTimeSpan().TotalMilliseconds,
         game.CalculateRemainingTime(playerIdx).TotalMilliseconds,
         game.CalculateRemainingTime(playerIdx == 0 ? 1 : 0).TotalMilliseconds,
         game.StakeEth,

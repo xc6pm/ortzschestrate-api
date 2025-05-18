@@ -214,7 +214,7 @@ public partial class GameHub(
                 convertCharToDbColor(game.PlayerColors[1].AsChar)!.Value
             ],
             StakeEth = game.StakeEth,
-            TimeInMs = game.GameType.GetTimeSpan().TotalMilliseconds,
+            TimeInMs = game.TimeControl.GetTimeSpan().TotalMilliseconds,
             Started = game.StartedTime,
             RemainingTimesInMs = [game.RemainingTimes[0].TotalMilliseconds, game.RemainingTimes[1].TotalMilliseconds],
             Pgn = game.Pgn,
