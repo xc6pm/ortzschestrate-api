@@ -15,7 +15,7 @@ public record FinishedGameSlim(
         g.Players.Select(p => new Player(p.Id, p.UserName!)).ToArray(),
         g.PlayerColors.Select(c => c == Color.White ? 'w' : 'b').ToArray(),
         g.StakeEth,
-        TimeControl.FromMilliseconds((int)g.TimeInMs),
+        TimeControl.FromMilliseconds(g.TimeInMs),
         g.Started,
         g.WonSide switch
         {
@@ -44,7 +44,7 @@ public record FinishedGameVM(
         g.Players.Select(p => new Player(p.Id, p.UserName!)).ToArray(),
         g.PlayerColors.Select(c => c == Color.White ? 'w' : 'b').ToArray(),
         g.StakeEth,
-        TimeControl.FromMilliseconds((int)g.TimeInMs),
+        TimeControl.FromMilliseconds(g.TimeInMs),
         g.Started,
         g.RemainingTimesInMs.ToArray(),
         g.Pgn,
