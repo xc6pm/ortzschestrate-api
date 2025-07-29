@@ -7,7 +7,7 @@ using DbContext = Ortzschestrate.Data.DbContext;
 
 namespace Ortzschestrate.Api.Controllers;
 
-[Route("/api/[controller]/[action]")]
+[Route("/[controller]/[action]")]
 public class HistoryController : ControllerBase
 {
     public const int MaxGamesToFetchAtOnce = 50;

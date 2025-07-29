@@ -10,7 +10,7 @@ using DbContext = Ortzschestrate.Data.DbContext;
 
 namespace Ortzschestrate.Api.Controllers;
 
-[Route("/api/[controller]/[action]")]
+[Route("/[controller]/[action]")]
 public class WalletController : ControllerBase
 {
     [Authorize]

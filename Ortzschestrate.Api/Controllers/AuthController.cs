@@ -7,7 +7,7 @@ using Ortzschestrate.Data.Models;
 
 namespace Ortzschestrate.Api.Controllers;
 
-[Route("/api/[controller]/[action]")]
+[Route("/[controller]/[action]")]
 public class AuthController : ControllerBase
 {
     [HttpPost]
