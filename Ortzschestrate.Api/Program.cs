@@ -2,6 +2,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Bytewizer.Backblaze.Client;
 using FluentFTP;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
@@ -179,26 +180,33 @@ builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(
         new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Keys")));
 #else
-string ftpUsername = Environment.GetEnvironmentVariable(EnvKeys.FtpUserName) ??
-                     throw new Exception("FTP Username is required to start the application.");
-string ftpPassword = Environment.GetEnvironmentVariable(EnvKeys.FtpPassword) ??
-                     throw new Exception("FTP Password is required to start the application.");
-byte[] certBytes = null;
-using (var ftp = new FtpClient("bromo.liara.cloud", ftpUsername, ftpPassword, 2112))
+using (var client = new BackblazeClient())
 {
-    ftp.Connect();
-    ftp.DownloadBytes(out certBytes, "/certs/dataprotection.pfx");
-    // ftp.DownloadFile("./dataaprotection.pfx", "/certs/dataprotection.pfx", verifyOptions: FtpVerify.Throw);
-}
+    string backblazeKeyId = Environment.GetEnvironmentVariable(EnvKeys.BackblazeKeyId) ??
+                            throw new Exception("Backblaze Key Id is required to start the application.");
+    string backblazeApplicationKey = Environment.GetEnvironmentVariable(EnvKeys.BackblazeApplicationKey) ??
+                                     throw new Exception(
+                                         "Backblaze Application Key is required to start the application.");
 
-string dataProtectionCertPass = Environment.GetEnvironmentVariable(EnvKeys.DataProtectionCertPass) ??
-                                throw new Exception(
-                                    $"{EnvKeys.DataProtectionCertPass} is required to start the application.");
-var dataProtectionCert = new X509Certificate2(certBytes, dataProtectionCertPass);
-builder.Services.AddDataProtection()
-    .SetApplicationName("Ortzschestrate")
-    .PersistKeysToDbContext<DbContext>()
-    .ProtectKeysWithCertificate(dataProtectionCert);
+    client.Connect(backblazeKeyId, backblazeApplicationKey);
+    var buckets = await client.Buckets.GetAsync();
+
+    var bucket = buckets.First(b => b.BucketId == "f1e2166cbb3a47be9d85061d");
+
+    var certStream = new MemoryStream();
+    var results = await client.DownloadAsync(bucket.BucketName, "dataprotection.pfx", certStream);
+    results.EnsureSuccessStatusCode();
+
+    string dataProtectionCertPass = Environment.GetEnvironmentVariable(EnvKeys.DataProtectionCertPass) ??
+                                    throw new Exception(
+                                        $"{EnvKeys.DataProtectionCertPass} is required to start the application.");
+    
+    var dataProtectionCert = new X509Certificate2(certStream.ToArray(), dataProtectionCertPass.TrimEnd('\n'));
+    builder.Services.AddDataProtection()
+        .SetApplicationName("Ortzschestrate")
+        .PersistKeysToDbContext<DbContext>()
+        .ProtectKeysWithCertificate(dataProtectionCert);
+}
 #endif
 
 ServiceRegisterer.RegisterServices(builder.Services);
