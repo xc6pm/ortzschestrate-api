@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Backblaze.Client" Version="1.1.1" />
+        <PackageReference Include="AWSSDK.S3" Version="4.0.13.1" />
         <PackageReference Include="FluentFTP" Version="52.1.0" />
         <PackageReference Include="Gera.Chess" Version="1.2.0" />
         <PackageReference Include="MailKit" Version="4.9.0" />

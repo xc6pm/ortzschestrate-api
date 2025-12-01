@@ -26,8 +26,9 @@ public static class EnvKeys
     
     public const string CorsWhiteList = "ORTZSCHESTRATE_CORS_WHITELIST";
     
-    public const string BackblazeKeyId = "ORTZSCHESTRATE_BACKBLAZE_KEY_ID";
-    public const string BackblazeApplicationKey = "ORTZSCHESTRATE_BACKBLAZE_APP_KEY";
-    
+    public const string BackblazeAppKey = "ORTZSCHESTRATE_BACKBLAZE_APP_KEY";
+    public const string BackblazeAppKeySecret = "ORTZSCHESTRATE_BACKBLAZE_APP_KEY_SECRET";
+
+
     public const string DataProtectionCertPass = "ORTZSCHESTRATE_DATA_PROTECTION_CERT_PASS";
 }

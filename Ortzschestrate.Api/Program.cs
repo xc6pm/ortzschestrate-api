@@ -2,7 +2,8 @@ using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Bytewizer.Backblaze.Client;
+using Amazon.Runtime;
+using Amazon.S3;
 using FluentFTP;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
@@ -174,28 +175,27 @@ builder.Services.AddCors(options =>
 });
 
 
-#if DEBUG
-builder.Services.AddDataProtection()
-    .SetApplicationName("Ortzschestrate")
-    .PersistKeysToFileSystem(
-        new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Keys")));
-#else
-using (var client = new BackblazeClient())
-{
-    string backblazeKeyId = Environment.GetEnvironmentVariable(EnvKeys.BackblazeKeyId) ??
-                            throw new Exception("Backblaze Key Id is required to start the application.");
-    string backblazeApplicationKey = Environment.GetEnvironmentVariable(EnvKeys.BackblazeApplicationKey) ??
+//#if DEBUG
+//builder.Services.AddDataProtection()
+//    .SetApplicationName("Ortzschestrate")
+//    .PersistKeysToFileSystem(
+//        new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Keys")));
+//#else
+string backblazeAppKey = Environment.GetEnvironmentVariable(EnvKeys.BackblazeAppKey) ??
+    throw new Exception("Backblaze App Key is required to start the application.");
+string backblazeAppKeySecret = Environment.GetEnvironmentVariable(EnvKeys.BackblazeAppKeySecret) ??
                                      throw new Exception(
-                                         "Backblaze Application Key is required to start the application.");
+        "Backblaze App Key Secret is required to start the application.");
 
-    client.Connect(backblazeKeyId, backblazeApplicationKey);
-    var buckets = await client.Buckets.GetAsync();
-
-    var bucket = buckets.First(b => b.BucketId == "f1e2166cbb3a47be9d85061d");
-
-    var certStream = new MemoryStream();
-    var results = await client.DownloadAsync(bucket.BucketName, "dataprotection.pfx", certStream);
-    results.EnsureSuccessStatusCode();
+using (var client = new AmazonS3Client(new BasicAWSCredentials(backblazeAppKey, backblazeAppKeySecret), new AmazonS3Config
+{
+    ServiceURL = "https://s3.eu-central-003.backblazeb2.com",
+    ForcePathStyle = true,
+}))
+{
+    var response = await client.GetObjectAsync("data-protection", "dataprotection.pfx");
+    using var certStream = new MemoryStream();
+    await response.ResponseStream.CopyToAsync(certStream);
 
     string dataProtectionCertPass = Environment.GetEnvironmentVariable(EnvKeys.DataProtectionCertPass) ??
                                     throw new Exception(
@@ -207,7 +207,7 @@ using (var client = new BackblazeClient())
         .PersistKeysToDbContext<DbContext>()
         .ProtectKeysWithCertificate(dataProtectionCert);
 }
-#endif
+//#endif
 
 ServiceRegisterer.RegisterServices(builder.Services);
 
