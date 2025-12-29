@@ -35,6 +35,8 @@ public class Game
     public TimeSpan[] RemainingTimes { get; }
     public CancellationTokenSource?[] ConnectionTimeoutCancellations { get; } = new CancellationTokenSource[2];
     public bool IsPlayer1Turn => _board.Turn == PlayerColors[0];
+    public PieceColor Turn => _board.Turn;
+    public PieceColor LastTurn => _board.ExecutedMoves[^1].Piece.Color;
 
 
     public string Pgn => _board.ToPgn();

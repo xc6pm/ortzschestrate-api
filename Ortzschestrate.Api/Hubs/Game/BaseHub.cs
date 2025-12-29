@@ -154,6 +154,7 @@ public partial class GameHub(
                     // They'll reject this update if they had received it before.
                     _ = outgoingMessageTracker.PlayerMovedAsync(Context.UserIdentifier!, new GameUpdate(
                         leavingPlayer.OngoingShortGame.LastMove,
+                        leavingPlayer.OngoingShortGame.LastTurn.AsChar,
                         leavingPlayer.OngoingShortGame.RemainingTimes[idxOfOpponent].TotalMilliseconds));
                 }
 

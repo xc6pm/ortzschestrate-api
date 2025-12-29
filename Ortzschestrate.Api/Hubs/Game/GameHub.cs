@@ -49,6 +49,7 @@ public partial class GameHub
 
         bool success;
         TimeSpan remainingTime;
+        char color = game.Turn.AsChar;
 
         try
         {
@@ -63,9 +64,9 @@ public partial class GameHub
             throw new HubException("Couldn't make that move.");
 
         _ = outgoingMessageTracker.PlayerMovedAsync(game.Players[0].UserId,
-            new GameUpdate(move, remainingTime.TotalMilliseconds));
+            new GameUpdate(move, color, remainingTime.TotalMilliseconds));
         _ = outgoingMessageTracker.PlayerMovedAsync(game.Players[1].UserId,
-            new GameUpdate(move, remainingTime.TotalMilliseconds));
+            new GameUpdate(move, color, remainingTime.TotalMilliseconds));
 
         if (game.EndGame != null)
         {
